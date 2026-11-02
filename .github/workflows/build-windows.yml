@@ -1,0 +1,67 @@
+name: Build Windows app
+
+# Every push to the release branch builds a new Windows installer, runs the
+# tests first, and publishes a GitHub release. Installed copies of VIDA Dental
+# find that release through "Software updates".
+on:
+  push:
+    branches:
+      - claude/quirky-pasteur-v9tc47
+      - main
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: windows-release
+  cancel-in-progress: false
+
+jobs:
+  build:
+    runs-on: windows-2022
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+
+      - name: Install
+        run: npm ci
+
+      - name: Test the clinic rules
+        run: npm test
+
+      - name: Set the version (major.minor from package.json, patch = build number)
+        shell: bash
+        run: |
+          BASE=$(node -p "require('./package.json').version.split('.').slice(0,2).join('.')")
+          VERSION="$BASE.${{ github.run_number }}"
+          npm version "$VERSION" --no-git-tag-version --allow-same-version
+          echo "VERSION=$VERSION" >> "$GITHUB_ENV"
+          echo "Building VIDA Dental $VERSION"
+
+      - name: Build installer and portable app, publish the release
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: npx electron-builder --win --x64 --publish always
+
+      - name: Check both installers exist
+        shell: bash
+        run: |
+          test -f "dist/VIDA-Dental-Setup-$VERSION.exe"
+          test -f "dist/VIDA-Dental-Portable-$VERSION.exe"
+          test -f "dist/latest.yml"
+          ls -la dist
+
+      - name: Keep the installers with this run
+        uses: actions/upload-artifact@v4
+        with:
+          name: VIDA-Dental-${{ env.VERSION }}
+          path: |
+            dist/VIDA-Dental-Setup-*.exe
+            dist/VIDA-Dental-Portable-*.exe
+            dist/latest.yml
+          retention-days: 30

@@ -1,0 +1,87 @@
+{
+  "name": "vida-dental",
+  "productName": "VIDA Dental",
+  "version": "0.1.0",
+  "description": "Offline dental clinic software for VIDA (Vida Volunteer) clinic events.",
+  "main": "src/main/main.js",
+  "author": "VIDA (Vida Volunteer)",
+  "license": "SEE LICENSE IN LICENSE",
+  "private": true,
+  "scripts": {
+    "start": "electron .",
+    "test": "node --test test/*.test.js",
+    "smoke": "electron scripts/smoke.js",
+    "dist": "electron-builder --win --x64 --publish never"
+  },
+  "dependencies": {
+    "electron-updater": "6.8.11"
+  },
+  "devDependencies": {
+    "electron": "44.9.3",
+    "electron-builder": "26.18.0"
+  },
+  "engines": {
+    "node": ">=22.13"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/oofski/VidaVolunteer.git"
+  },
+  "build": {
+    "appId": "org.vidavolunteer.dental",
+    "productName": "VIDA Dental",
+    "copyright": "Copyright © 2026 VIDA (Vida Volunteer)",
+    "directories": {
+      "output": "dist",
+      "buildResources": "build"
+    },
+    "files": [
+      "src/**/*",
+      "build/icon.png",
+      "package.json"
+    ],
+    "asar": true,
+    "win": {
+      "target": [
+        {
+          "target": "nsis",
+          "arch": [
+            "x64"
+          ]
+        },
+        {
+          "target": "portable",
+          "arch": [
+            "x64"
+          ]
+        }
+      ],
+      "icon": "build/icon.png",
+      "executableName": "VIDA Dental"
+    },
+    "nsis": {
+      "oneClick": false,
+      "perMachine": false,
+      "allowToChangeInstallationDirectory": true,
+      "createDesktopShortcut": true,
+      "createStartMenuShortcut": true,
+      "shortcutName": "VIDA Dental",
+      "deleteAppDataOnUninstall": false,
+      "artifactName": "VIDA-Dental-Setup-${version}.${ext}"
+    },
+    "portable": {
+      "artifactName": "VIDA-Dental-Portable-${version}.${ext}"
+    },
+    "releaseInfo": {
+      "releaseNotesFile": "docs/RELEASE_NOTES.md"
+    },
+    "publish": [
+      {
+        "provider": "github",
+        "owner": "oofski",
+        "repo": "VidaVolunteer",
+        "releaseType": "release"
+      }
+    ]
+  }
+}
