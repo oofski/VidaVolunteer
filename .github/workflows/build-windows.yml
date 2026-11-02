@@ -21,9 +21,9 @@ jobs:
   build:
     runs-on: windows-2022
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
 
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@v5
         with:
           node-version: 24
           cache: npm
@@ -43,18 +43,37 @@ jobs:
           echo "VERSION=$VERSION" >> "$GITHUB_ENV"
           echo "Building VIDA Dental $VERSION"
 
-      - name: Build installer and portable app, publish the release
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: npx electron-builder --win --x64 --publish always
+      - name: Build the installer and the portable app
+        run: npx electron-builder --win --x64 --publish never
 
-      - name: Check both installers exist
+      - name: Check every file exists
         shell: bash
         run: |
-          test -f "dist/VIDA-Dental-Setup-$VERSION.exe"
-          test -f "dist/VIDA-Dental-Portable-$VERSION.exe"
-          test -f "dist/latest.yml"
+          for f in "VIDA-Dental-Setup-$VERSION.exe" "VIDA-Dental-Setup-$VERSION.exe.blockmap" "VIDA-Dental-Portable-$VERSION.exe" "latest.yml"; do
+            test -f "dist/$f" || { echo "Missing dist/$f"; exit 1; }
+          done
           ls -la dist
+
+      # One step creates the release with every file, so two uploads never
+      # race each other. It stays a draft until every file is uploaded; a
+      # dropped upload is retried up to 3 times.
+      - name: Publish the GitHub release
+        shell: bash
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          FILES=("dist/VIDA-Dental-Setup-$VERSION.exe" "dist/VIDA-Dental-Setup-$VERSION.exe.blockmap" "dist/VIDA-Dental-Portable-$VERSION.exe" "dist/latest.yml")
+          if ! gh release view "v$VERSION" >/dev/null 2>&1; then
+            gh release create "v$VERSION" --draft --title "VIDA Dental $VERSION" --notes-file docs/RELEASE_NOTES.md --target "$GITHUB_SHA"
+          fi
+          for attempt in 1 2 3 4; do
+            if gh release upload "v$VERSION" "${FILES[@]}" --clobber; then break; fi
+            [ "$attempt" = 4 ] && { echo "Upload failed after 4 tries"; exit 1; }
+            sleep $((attempt * 10))
+          done
+          # Publish only once every file is there, so laptops never see a half-uploaded release.
+          gh release edit "v$VERSION" --draft=false --latest
+          gh release view "v$VERSION" --json assets --jq '.assets[].name'
 
       - name: Keep the installers with this run
         uses: actions/upload-artifact@v4
