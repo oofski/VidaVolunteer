@@ -1,6 +1,7 @@
 // Patients: every record across every clinic and trip. Find a returning
 // patient, see their history and follow-ups, start a new visit.
 import { h, mount, call, attempt, field, input, F, emptyState, fullName, fmtDate, sexLabel, pill, modal, toast, flagPills } from '../lib.js';
+import { icon } from '../icons.js';
 import { treatmentLine, chartSummary } from '../components.js';
 
 export async function patients(app, el, params) {
@@ -35,7 +36,7 @@ export async function patients(app, el, params) {
           fact('Phone', p.no_phone ? 'No phone' : p.phone), fact('Address', p.address), fact('Community', p.community),
           fact('Municipality', p.municipality), fact('Department / province', p.region), fact('Country', p.country),
           fact('Language', p.language === 'en' ? 'English' : 'Spanish'), fact('First registered', fmtDate(p.created_at.slice(0, 10))))),
-      follow.length ? h('div', { class: 'notice notice-warn' }, '↻ Follow-up needed: ', follow.map(v => `${v.checkout.follow_up.reason} (${fmtDate(v.visit_date)})`).join('; ')) : null,
+      follow.length ? h('div', { class: 'notice notice-warn' }, icon('time', 20), 'Follow-up needed: ', follow.map(v => `${v.checkout.follow_up.reason} (${fmtDate(v.visit_date)})`).join('; ')) : null,
       h('h2', { class: 'section-title' }, `Visits (${d.visits.length})`),
       d.visits.length ? d.visits.map(v => visitCard(app, v)) : emptyState('No visits yet', ''));
     detail.scrollIntoView({ block: 'start', behavior: 'smooth' });
@@ -46,7 +47,7 @@ export async function patients(app, el, params) {
   if (params[0]) open(Number(params[0]));
 }
 
-function fact(label, value) { return [h('dt', null, label), h('dd', null, value || '—')]; }
+function fact(label, value) { return h('div', null, h('dt', null, label), h('dd', null, value || '—')); }
 
 function visitCard(app, v) {
   const numbering = app.settings.tooth_numbering;
@@ -61,9 +62,9 @@ function visitCard(app, v) {
       v.triage?.notes ? h('div', null, h('b', null, 'Triage notes: '), v.triage.notes) : null,
       treatmentLine(v.treatment, numbering),
       v.checkout?.prescriptions?.length ? h('div', null, h('b', null, 'Prescriptions: '), v.checkout.prescriptions.map(r => r.name).join(', ')) : null,
-      v.checkout?.follow_up?.needed ? h('div', { class: 'follow' }, '↻ Follow-up: ' + v.checkout.follow_up.reason) : null,
+      v.checkout?.follow_up?.needed ? h('div', { class: 'follow' }, 'Follow-up: ' + v.checkout.follow_up.reason) : null,
       v.checkout?.left_reason ? h('div', null, 'Left without care: ' + v.checkout.left_reason) : null,
-      h('div', null, h('a', { href: `#/${v.status === 'checked_out' || v.status === 'left' ? 'checkout' : 'triage'}/${v.id}`, class: 'link-btn' }, 'Open this visit →'),
+      h('div', null, h('a', { href: `#/${v.status === 'checked_out' || v.status === 'left' ? 'checkout' : 'triage'}/${v.id}`, class: 'link-btn' }, 'Open this visit'),
         app.user.role === 'admin' && (v.status === 'checked_out' || v.status === 'left')
           ? h('button', { class: 'link-btn', onclick: async () => { const r = await attempt(() => call('visits:reopen', { id: v.id }), 'Visit re-opened.'); if (r) location.hash = '#/checkout/' + v.id; } }, 'Re-open to correct') : null)));
 }

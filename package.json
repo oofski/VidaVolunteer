@@ -1,7 +1,7 @@
 {
   "name": "vida-dental",
   "productName": "VIDA Dental",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "Offline dental clinic software for VIDA (Vida Volunteer) clinic events.",
   "main": "src/main/main.js",
   "author": "VIDA (Vida Volunteer)",

@@ -1,11 +1,14 @@
 // First-run setup and PIN sign-in.
 import { h, mount, call, toast, field, input } from '../lib.js';
+import { icon } from '../icons.js';
 
 function brandPanel() {
   return h('div', { class: 'auth-brand' },
-    h('div', { class: 'auth-logo' }, 'VIDA'),
-    h('div', { class: 'auth-title' }, 'Dental clinic'),
-    h('p', { class: 'auth-tag' }, 'Patient intake, consent, triage, treatment and checkout — all on this laptop, with or without internet.'));
+    h('div', null,
+      h('div', { class: 'auth-logo' }, 'VIDA'),
+      h('div', { class: 'auth-title' }, 'Dental clinic system'),
+      h('p', { class: 'auth-tag' }, 'Registration, consent, triage, treatment and checkout. Everything stays on this laptop and works without internet.')),
+    h('dl', { class: 'auth-spec' }, h('dt', null, 'MODE'), h('dd', { style: { margin: 0 } }, 'Offline · local data'), h('dt', null, 'ORG'), h('dd', { style: { margin: 0 } }, 'VIDA (Vida Volunteer)')));
 }
 
 export function setup(app, done) {
@@ -59,7 +62,7 @@ export function login(app, done) {
     const pad = h('div', { class: 'pinpad' }, keys.map(k => h('button', {
       class: 'pin-key' + (k === 'ok' ? ' pin-ok' : '') + (k === 'back' ? ' pin-back' : ''), type: 'button',
       'aria-label': k === 'back' ? 'Delete' : k === 'ok' ? 'Sign in' : k, onclick: () => press(k)
-    }, k === 'back' ? '⌫' : k === 'ok' ? 'Sign in' : k)));
+    }, k === 'back' ? icon('arrowLeft', 20) : k === 'ok' ? 'Sign in' : k)));
     const onKey = (e) => {
       if (!host.isConnected) return document.removeEventListener('keydown', onKey);
       if (/^\d$/.test(e.key)) press(e.key);
@@ -70,7 +73,7 @@ export function login(app, done) {
     document.addEventListener('keydown', onKey);
     draw();
     mount(host,
-      h('button', { class: 'link-btn back', onclick: () => { document.removeEventListener('keydown', onKey); chosen = null; render(); } }, '← Not you?'),
+      h('button', { class: 'link-btn back', onclick: () => { document.removeEventListener('keydown', onKey); chosen = null; render(); } }, icon('arrowLeft', 16), 'Not you?'),
       h('div', { class: 'pin-who' }, h('span', { class: 'avatar avatar-lg' }, initials(chosen.name)), h('div', null, h('div', { class: 'person-name' }, chosen.name), h('div', { class: 'person-role' }, chosen.role_label))),
       h('h1', null, 'Enter your PIN'), dots, err, pad);
   }

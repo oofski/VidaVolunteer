@@ -55,8 +55,38 @@ async function run(win) {
 
   await shot('01-setup');
   await js(`$type($field('Your name'), 'Lucia Admin'); $type($field('Choose a PIN'), '2468'); $type($field('Type the PIN'), '2468'); $click('button', 'Create administrator');`);
+  await wait(1200);
+  // First sign-in offers the registration walkthrough.
+  await shot('02-welcome');
+  await js(`$click('.modal-actions button', 'Start walkthrough');`);
   await wait(900);
-  await shot('02-dashboard-no-clinic');
+  await shot('02a-tour-language');
+  const next = () => js(`$click('.tour-next'); await $sleep(450);`);
+  const tourStep = () => js(`return document.querySelector('.tour-step') ? document.querySelector('.tour-step').textContent : 'none'`);
+  await next(); await next();                                     // language, search
+  await js(`document.querySelector('[data-tour=new]').click();`); await wait(700);
+  await shot('02b-tour-details');
+  await next(); await next();                                     // form, date of birth
+  await js(`document.querySelector('[data-tour=reg-next]').click();`); await wait(800);
+  await shot('02c-tour-question');
+  await js(`document.querySelector('[data-tour=q-first] [data-v="no"]').click();`); await wait(900);
+  await js(`document.querySelector('[data-tour=med-next]').click();`); await wait(900);
+  await next();                                                   // read aloud
+  await js(`for (const c of document.querySelectorAll('.consent-checks input')) c.click();`); await wait(900);
+  await js(`$click('button', 'Crear firma');`); await wait(900);
+  await shot('02d-tour-submit');
+  await js(`document.querySelector('[data-tour=submit]').click();`); await wait(900);
+  await shot('02e-tour-done');
+  const label = await tourStep();
+  if (!/Step 13 of 13/.test(label)) errors.push('walkthrough did not reach its last step, it is on: ' + label);
+  await next();
+  await wait(500);
+  const tours = await js(`return (await window.api.invoke('auth:me')).data.tours`);
+  if (!tours.includes('registration')) errors.push('walkthrough was not recorded as done');
+  const practiceSaved = await js(`return (await window.api.invoke('patients:search', { text: 'Ejemplo' })).data.length`);
+  if (practiceSaved) errors.push('practice registration saved a patient');
+  await go('dashboard');
+  await shot('02f-dashboard-no-clinic');
 
   await go('events');
   await js(`$click('button', '+ New clinic'); await $sleep(200);
@@ -77,9 +107,9 @@ async function run(win) {
   await shot('05-staff');
 
   // ---- check-in ----
-  await go('checkin');
-  await shot('06-checkin-start');
-  await js(`$click('button', '+ New patient');`);
+  await go('register');
+  await shot('06-registration-start');
+  await js(`$click('button', 'New patient');`);
   await wait(300);
   await js(`
     $type($field('Nombre'), 'María'); $type($field('Apellido'), 'Xocop Tzoc'); $type($field('Fecha de nacimiento'), '12/05/1984');
@@ -103,12 +133,12 @@ async function run(win) {
   await wait(500);
   await js(`for (const c of document.querySelectorAll('.consent-checks input')) c.click(); $click('button', 'Crear firma');`);
   await shot('09-consent');
-  await js(`$click('button', 'Sign and check in');`);
+  await js(`$click('button', 'Sign and register');`);
   await wait(900);
-  await shot('10-checkin-done');
+  await shot('10-registration-done');
 
   // A second patient: a child, signed by a parent, drawn signature via API helpers
-  await js(`$click('button', 'Check in the next patient'); await $sleep(300); $click('button', '+ New patient'); await $sleep(200);
+  await js(`$click('button', 'Register the next patient'); await $sleep(300); $click('button', 'New patient'); await $sleep(200);
     $type($field('Nombre'), 'José'); $type($field('Apellido'), 'Xocop'); $type($field('Fecha de nacimiento'), '03/02/2017');
     $click('.seg-btn', 'Masculino'); document.querySelector('.check input').click(); $type($field('Dirección'), 'Cantón Pachichaj, casa 12');
     $type($field('Municipio'), 'San Juan La Laguna'); $type($field('Departamento'), 'Sololá');
@@ -122,7 +152,7 @@ async function run(win) {
     const ev = (type, x, y) => cv.dispatchEvent(new PointerEvent(type, { clientX: r.left + x, clientY: r.top + y, pointerId: 1, bubbles: true }));
     ev('pointerdown', 30, 100); for (let i = 0; i < 30; i++) ev('pointermove', 30 + i * 8, 100 - Math.sin(i / 3) * 30); ev('pointerup', 270, 100);`);
   await shot('11-consent-minor');
-  await js(`$click('button', 'Sign and check in');`);
+  await js(`$click('button', 'Sign and register');`);
   await wait(800);
 
   // ---- triage ----
@@ -192,15 +222,26 @@ async function run(win) {
   await go('updates');
   await shot('22-updates');
 
-  // sign out and see the PIN screen
-  await js(`$click('.link-btn', 'Sign out');`);
+  // The rail opens to show labels; the station queue folds away for more room.
+  await go('treatment');
+  await js(`$click('.tb-btn[title="Menu"]'); await $sleep(300);`);
+  await shot('22a-rail-open');
+  await js(`$click('.tb-btn[title="Menu"]'); $click('.queue-title .icon-btn'); await $sleep(300);`);
+  await shot('22b-queue-folded');
+  await js(`$click('.queue-handle .icon-btn');`);
+
+  // sign out from the user menu and see the PIN screen
+  await js(`$click('.tb-user'); await $sleep(200); $click('.menu button', 'Sign out');`);
   await wait(700);
   await js(`$click('.person', 'Carlos');`);
   await wait(300);
   await shot('23-pin');
   await js(`for (const k of '1357') $click('.pin-key', k); $click('.pin-key', 'Sign in');`);
-  await wait(900);
-  await shot('24-dentist-home');
+  await wait(1300);
+  await shot('24-dentist-welcome');
+  await js(`$click('.modal-actions button', 'Not now');`);
+  await wait(400);
+  await shot('25-dentist-home');
 
   finish(errors.length ? 1 : 0);
 }

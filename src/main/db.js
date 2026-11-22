@@ -33,7 +33,7 @@ const STATUSES = {
 };
 const OPEN_STATUSES = ['waiting_triage', 'waiting_education', 'waiting_treatment', 'in_treatment', 'ready_checkout'];
 
-const SCHEMA_VERSION = 1;
+const SCHEMA_VERSION = 2;
 
 function nowIso() { return new Date().toISOString(); }
 function localDate(d = new Date()) {
@@ -64,7 +64,7 @@ function openStore(file) {
 function migrate(db) {
   const v = db.prepare('PRAGMA user_version').get().user_version;
   if (v >= SCHEMA_VERSION) return;
-  db.exec(`
+  if (v < 1) db.exec(`
     CREATE TABLE IF NOT EXISTS settings (key TEXT PRIMARY KEY, value TEXT);
     CREATE TABLE IF NOT EXISTS staff (
       id INTEGER PRIMARY KEY, uid TEXT UNIQUE NOT NULL, name TEXT NOT NULL, role TEXT NOT NULL,
@@ -108,6 +108,8 @@ function migrate(db) {
       id INTEGER PRIMARY KEY, at TEXT NOT NULL, user_id INTEGER, user_name TEXT,
       action TEXT NOT NULL, entity TEXT, entity_id INTEGER, detail TEXT);
   `);
+  // v2: which guided walkthroughs each person has finished.
+  if (v < 2) db.exec('ALTER TABLE staff ADD COLUMN tours TEXT');
   db.exec(`PRAGMA user_version = ${SCHEMA_VERSION}`);
 }
 
@@ -183,7 +185,7 @@ function createStore(db, file) {
   // ---- staff and PIN sign-in --------------------------------------------
   const lockouts = new Map();
   function staffPublic(r) {
-    return r && { id: r.id, name: r.name, role: r.role, role_label: ROLES[r.role] || r.role, active: !!r.active, created_at: r.created_at };
+    return r && { id: r.id, name: r.name, role: r.role, role_label: ROLES[r.role] || r.role, active: !!r.active, created_at: r.created_at, tours: pj(r.tours, []) };
   }
   function isSetup() { return !!q("SELECT 1 FROM staff WHERE role = 'admin' AND active = 1 LIMIT 1").get(); }
 
@@ -282,6 +284,23 @@ function createStore(db, file) {
     q('UPDATE staff SET pin_salt = ?, pin_hash = ?, updated_at = ? WHERE id = ?').run(salt, hashPin(pin, salt), nowIso(), r.id);
     lockouts.delete(r.id);
     audit(actor, 'staff.pin_change', 'staff', r.id, r.name);
+    return true;
+  }
+  const TOURS = ['registration'];
+  function setTourDone(actor, name, done = true) {
+    if (!TOURS.includes(name)) throw new UserError('Unknown walkthrough.');
+    const r = q('SELECT tours FROM staff WHERE id = ?').get(actor.id);
+    const set = new Set(pj(r && r.tours, []));
+    if (done) set.add(name); else set.delete(name);
+    q('UPDATE staff SET tours = ?, updated_at = ? WHERE id = ?').run(j([...set]), nowIso(), actor.id);
+    audit(actor, done ? 'training.complete' : 'training.reset', 'staff', actor.id, name);
+    return [...set];
+  }
+  function resetTours(actor, id) {
+    const r = q('SELECT * FROM staff WHERE id = ?').get(Number(id));
+    if (!r) throw new UserError('That account no longer exists.');
+    q('UPDATE staff SET tours = NULL, updated_at = ? WHERE id = ?').run(nowIso(), r.id);
+    audit(actor, 'training.reset', 'staff', r.id, r.name);
     return true;
   }
   function getStaff(id) { return staffPublic(q('SELECT * FROM staff WHERE id = ? AND active = 1').get(Number(id))); }
@@ -843,7 +862,7 @@ function createStore(db, file) {
     db, file, tx, close, ROLES, STATUSES,
     getSetting, setSetting, publicSettings, updateSettings,
     audit, listAudit,
-    isSetup, createFirstAdmin, loginList, login, listStaff, addStaff, updateStaff, setStaffActive, setStaffPin, getStaff,
+    isSetup, createFirstAdmin, loginList, login, listStaff, setTourDone, resetTours, addStaff, updateStaff, setStaffActive, setStaffPin, getStaff,
     listEvents, getEvent, activeEvent, createEvent, updateEvent, setActiveEvent, finishEvent, reopenEvent, deleteEvent,
     searchPatients, findMatches, getPatient, updatePatient,
     checkIn, getVisit, updateMedical, signConsent, saveTriage, saveEducation, saveTreatment, checkout, markLeft,

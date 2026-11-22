@@ -273,3 +273,35 @@ test('tooth numbering: FDI and Universal labels', () => {
   assert.equal(F.parseDob('31/02/2000'), null);
   assert.equal(F.parseDob('29/02/2000'), '2000-02-29');
 });
+
+test('training: the registration walkthrough is remembered per person, and an admin can reset it', async () => {
+  const { api } = fresh();
+  const admin = await setupAdmin(api);
+  assert.deepEqual(admin.user.tours, []);
+  const bad = await api.call(admin, 'training:done', { name: 'nope' });
+  assert.equal(bad.ok, false);
+  const r = await api.call(admin, 'training:done', { name: 'registration' });
+  assert.deepEqual(r.data, ['registration']);
+  assert.deepEqual((await api.call(admin, 'auth:me')).data.tours, ['registration']);
+  await api.call(admin, 'staff:resetTraining', { id: admin.user.id });
+  assert.deepEqual((await api.call(admin, 'auth:me')).data.tours, []);
+});
+
+test('a version-1 database upgrades in place and keeps its data', async () => {
+  const { DatabaseSync } = require('node:sqlite');
+  const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'vida-mig-'));
+  const file = path.join(dir, 'old.db');
+  const s1 = openStore(file);
+  const api1 = createApi(s1, {});
+  await setupAdmin(api1);
+  s1.close();
+  // Turn it back into a v1 file: drop the new column's data and the version.
+  const raw = new DatabaseSync(file);
+  raw.exec('ALTER TABLE staff DROP COLUMN tours; PRAGMA user_version = 1;');
+  raw.close();
+  const s2 = openStore(file);
+  assert.equal(s2.db.prepare('PRAGMA user_version').get().user_version, 2);
+  assert.equal(s2.loginList().length, 1);
+  assert.deepEqual(s2.loginList()[0].tours, []);
+  s2.close();
+});

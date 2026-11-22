@@ -1,6 +1,7 @@
 // Treatment: the cleaning (prophy) station and the restorative / extraction
 // station, each with its own queue and treatment checklist.
 import { h, add, mount, call, attempt, field, input, select, checkbox, F, toast, pill, toothOptions, confirmBox } from '../lib.js';
+import { icon } from '../icons.js';
 import { station, stationEmpty } from './station.js';
 import { patientHeader, medicalSummary, previousVisits, toothChart, takeConsentDialog, chartSummary } from '../components.js';
 
@@ -12,7 +13,7 @@ export async function treatment(app, el, params) {
   await station(app, el, params, {
     route: 'treatment',
     title: 'Treatment',
-    tabs: () => h('div', { class: 'seg seg-full' }, [['cleaning', 'Cleaning'], ['restorative', 'Restorative / extraction']].map(([k, l]) => h('button', {
+    tabs: () => h('div', { class: 'seg seg-full' }, [['cleaning', 'Cleaning'], ['restorative', 'Restorative']].map(([k, l]) => h('button', {
       class: 'seg-btn' + (current === k ? ' on' : ''),
       onclick: () => { if (current === k) return; current = k; for (const t of app.timers) clearInterval(t); app.timers.clear(); history.replaceState(null, '', '#/treatment'); treatment(app, el, []); }
     }, l))),
@@ -55,7 +56,7 @@ function openTreatment(app, v, panel, reload, stationKey) {
   const teeth = () => toothOptions(numbering, (chartState && chartState.dentition) || 'mixed');
   function rows(list, make, add, label) {
     return h('div', { class: 'rows' },
-      list.map((item, i) => h('div', { class: 'tx-row' }, make(item), h('button', { class: 'icon-btn', 'aria-label': 'Remove', onclick: () => { list.splice(i, 1); drawForm(); } }, '✕'))),
+      list.map((item, i) => h('div', { class: 'tx-row' }, make(item), h('button', { class: 'icon-btn', 'aria-label': 'Remove', onclick: () => { list.splice(i, 1); drawForm(); } }, icon('trash', 16)))),
       h('button', { class: 'btn btn-ghost btn-sm', onclick: () => { list.push(add()); drawForm(); } }, '+ ' + label));
   }
   function toothSelect(item) {
@@ -70,7 +71,7 @@ function openTreatment(app, v, panel, reload, stationKey) {
         h('div', { class: 'rows' },
           data.sealants.map((tooth, i) => h('div', { class: 'tx-row' },
             select([{ value: '', label: 'Tooth…' }].concat(teeth()), tooth, { onchange: (e) => { data.sealants[i] = e.target.value; } }),
-            h('button', { class: 'icon-btn', 'aria-label': 'Remove', onclick: () => { data.sealants.splice(i, 1); drawForm(); } }, '✕'))),
+            h('button', { class: 'icon-btn', 'aria-label': 'Remove', onclick: () => { data.sealants.splice(i, 1); drawForm(); } }, icon('trash', 16)))),
           h('button', { class: 'btn btn-ghost btn-sm', onclick: () => { data.sealants.push(''); drawForm(); } }, '+ Add sealant')),
         field('Notes', h('textarea', { rows: 2, maxlength: 2000, oninput: (e) => { data.notes = e.target.value; } }, data.notes), { wide: true }));
     } else {
@@ -87,7 +88,7 @@ function openTreatment(app, v, panel, reload, stationKey) {
         rows(data.extractions, (x) => h('div', { class: 'row' }, toothSelect(x), select(F.EXTRACTION_TYPES, x.type, { onchange: (e) => { x.type = e.target.value; } })),
           () => ({ tooth: '', type: 'Simple' }), 'Add extraction'),
         h('h3', null, 'Anesthetic'),
-        v.flags.includes('Anesthesia reaction') ? h('div', { class: 'notice notice-danger' }, '⚠ The patient reported a past reaction to anesthesia.') : null,
+        v.flags.includes('Anesthesia reaction') ? h('div', { class: 'notice notice-danger' }, icon('warningFilled', 20), 'The patient reported a past reaction to anesthesia.') : null,
         rows(data.anesthetic, (a) => h('div', { class: 'row' }, select(F.ANESTHETICS, a.agent, { onchange: (e) => { a.agent = e.target.value; } }),
           input({ value: a.carpules, inputmode: 'decimal', class: 'num-input', maxlength: 4, oninput: (e) => { a.carpules = e.target.value; } }), h('span', { class: 'muted' }, 'carpules')),
         () => ({ agent: F.ANESTHETICS[0], carpules: 1 }), 'Add anesthetic'),
@@ -110,7 +111,7 @@ function openTreatment(app, v, panel, reload, stationKey) {
     if (r) reload(complete ? 'close' : v.id);
   }
 
-  const banner = v.flags.length ? h('div', { class: 'notice notice-danger big' }, '⚠ ' + v.flags.join(' · ')) : null;
+  const banner = v.flags.length ? h('div', { class: 'notice notice-danger big' }, icon('warningFilled', 20), v.flags.join(' · ')) : null;
   add(panel,
     patientHeader(v, { onConsent: () => takeConsentDialog(v, app.user.name, () => reload(v.id)) }),
     banner,
@@ -128,14 +129,14 @@ function openTreatment(app, v, panel, reload, stationKey) {
     h('div', { class: 'card' }, h('h3', null, 'Tooth chart'), chart.el),
     h('div', { class: 'card' }, form,
       field('Provider', input({ value: provider, maxlength: 80, oninput: (e) => { provider = e.target.value; } })),
-      done ? h('p', { class: 'ok-text' }, `✓ This station was completed${prev.done_at ? '' : ''}.`) : null,
+      done ? h('p', { class: 'ok-text' }, icon('checkFilled', 16), 'This station is complete.') : null,
       v.locked ? h('p', { class: 'muted' }, 'This visit is checked out and read-only.') : h('div', { class: 'actions' },
         h('button', { class: 'btn', onclick: () => save(false) }, 'Save progress'),
         h('span', { class: 'grow' }),
         h('button', { class: 'btn btn-primary btn-lg', onclick: async () => {
           const other = stationKey === 'cleaning' ? v.route_restorative && !v.restorative_done : v.route_cleaning && !v.cleaning_done;
           if (other || await confirmBox('Finish this station?', 'The patient goes to checkout.', 'Mark done')) save(true);
-        } }, `Mark ${stationKey === 'cleaning' ? 'cleaning' : 'treatment'} done ✓`)))
+        } }, `Mark ${stationKey === 'cleaning' ? 'cleaning' : 'treatment'} done`, icon('checkmark', 16))))
   );
 }
 

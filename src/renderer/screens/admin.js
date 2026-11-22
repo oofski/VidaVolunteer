@@ -1,6 +1,7 @@
 // Admin screens: clinic events, staff, settings & backup, audit log, and the
 // software updates screen (open to everyone; installing is admin-only).
 import { h, mount, call, attempt, field, input, select, checkbox, F, emptyState, fmtDate, fmtDateTime, pill, modal, toast, confirmBox } from '../lib.js';
+import { icon } from '../icons.js';
 
 // ---- clinic events -----------------------------------------------------------
 export async function events(app, el) {
@@ -78,15 +79,19 @@ export async function staff(app, el) {
   async function load() {
     const list = await call('staff:list');
     mount(body, h('div', { class: 'table-wrap' }, h('table', { class: 'table' },
-      h('thead', null, h('tr', null, ['Name', 'Role', 'Status', 'Added', ''].map(t => h('th', null, t)))),
+      h('thead', null, h('tr', null, ['Name', 'Role', 'Status', 'Training', 'Added', ''].map(t => h('th', null, t)))),
       h('tbody', null, list.map(s => h('tr', { class: s.active ? '' : 'row-off' },
         h('td', null, h('b', null, s.name), s.id === app.user.id ? ' (you)' : ''),
         h('td', null, s.role_label),
         h('td', null, s.active ? pill('Active', 'ok') : pill('Turned off', '')),
+        h('td', null, (s.tours || []).includes('registration') ? pill('Registration done', 'ok') : pill('Not yet', 'warn')),
         h('td', null, fmtDate(s.created_at.slice(0, 10))),
         h('td', { class: 'row-actions' },
           h('button', { class: 'btn btn-sm', onclick: () => edit(s) }, 'Edit'),
           h('button', { class: 'btn btn-sm', onclick: () => resetPin(s) }, 'Set PIN'),
+          (s.tours || []).includes('registration') ? h('button', { class: 'btn btn-sm btn-ghost', title: 'Show the registration walkthrough again at their next sign-in', onclick: async () => {
+            if (await attempt(() => call('staff:resetTraining', { id: s.id }), `${s.name} will see the walkthrough at their next sign-in.`)) load();
+          } }, 'Reset training') : null,
           s.id !== app.user.id ? h('button', { class: 'btn btn-sm btn-ghost', onclick: async () => {
             if (s.active && !(await confirmBox('Turn off this account?', `${s.name} will no longer be able to sign in. Their past work stays on record.`, 'Turn off'))) return;
             if (await attempt(() => call('staff:setActive', { id: s.id, active: !s.active }), s.active ? 'Turned off.' : 'Turned on.')) load();
@@ -158,7 +163,7 @@ export async function settings(app, el) {
         h('div', { class: 'row' },
           field('Allergy', select(allergyOptions, p.allergy || '', { onchange: (e) => { p.allergy = e.target.value || undefined; } })),
           checkbox('Block (not just warn)', p.block, (x) => { p.block = x; }),
-          h('button', { class: 'icon-btn', 'aria-label': 'Remove', onclick: () => { pharmacy.splice(i, 1); drawPharm(); } }, '✕')),
+          h('button', { class: 'icon-btn', 'aria-label': 'Remove', onclick: () => { pharmacy.splice(i, 1); drawPharm(); } }, icon('trash', 16))),
         field('Instructions in English', input({ value: p.en, maxlength: 300, oninput: (e) => { p.en = e.target.value; } })),
         field('Instrucciones en español', input({ value: p.es, maxlength: 300, oninput: (e) => { p.es = e.target.value; } }))))),
     h('button', { class: 'btn btn-ghost', onclick: () => { pharmacy.push({ id: '', name: '', en: '', es: '' }); drawPharm(); } }, '+ Add pharmacy item'));

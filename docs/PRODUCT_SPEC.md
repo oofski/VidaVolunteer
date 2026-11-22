@@ -1,4 +1,4 @@
-# VIDA Dental — Product specification (v0.1)
+# VIDA Dental — Product specification (v0.2)
 
 ## Overview
 VIDA Dental runs a VIDA dental clinic day on a Windows laptop, with or without internet. It covers check-in, medical history, consent, triage, education, treatment, checkout and patient records.
@@ -60,7 +60,27 @@ VIDA Dental runs a VIDA dental clinic day on a Windows laptop, with or without i
   - Items marked "block" are refused for a reported allergy (amoxicillin with a penicillin allergy).
   - Items marked "warn" need "Dentist confirmed" ticked (ibuprofen with an aspirin allergy).
 
-## Check-in
+## Screen layout and design
+- **Header (48 px, dark):** the menu button, the VIDA wordmark, the running clinic, an "Offline · local data" indicator, the walkthrough (?) button, the version (it turns orange when an update is ready) and the user menu (change PIN, sign out).
+- **Icon rail (48 px):** icons with hover labels. The menu button opens it to 208 px with labels, and each laptop remembers the choice.
+- **Station screens:** the queue (320 px) folds away to a 40 px handle so the patient's chart gets the full width. The choice is remembered per station.
+- **Visual system:** IBM Carbon Design System Gray 10 tokens, the 8 px spacing scale, square corners, IBM Plex Sans and Mono, and Carbon icons, all bundled for offline use. VIDA dental orange `#F7941D` is the single accent, used for primary actions, the current item and progress, with near-black text on it.
+
+## Registration walkthrough (training)
+- **When it appears:** the first time each person signs in, a welcome dialog offers the walkthrough. "Not now" or finishing it records it as done for that person.
+- **Replaying it:** from the ? button, the user menu, or "Show me how" on Registration.
+- **Resetting it:** an administrator can reset it for anyone with the `staff:resetTraining` action.
+- **Practice mode** (`#/register/practice`):
+  - Runs the real registration screens with an example patient.
+  - Search finds nobody, and no duplicate check runs.
+  - Submitting shows queue number P1. **Nothing is saved.**
+- **How it guides:** 13 steps. Each step dims everything except one control and explains it, and the trainee must really use the control to continue:
+  - **Click it:** New patient, Next, Sign and register.
+  - **Complete it:** answer a question, tick both consent boxes, sign.
+  - **Read it, then press Next:** for explanation-only steps.
+  - Esc or "Exit walkthrough" leaves at any time.
+
+## Registration
 1. **Language:** Español or English for the patient. Staff screens stay in English.
 2. **Returning patient?** Search past clinics by name, date of birth, phone or community. The search ignores accents and word order.
    - "Start visit" reuses the same patient record and pre-fills the last medical history.
@@ -78,7 +98,9 @@ VIDA Dental runs a VIDA dental clinic day on a Windows laptop, with or without i
    - Signer's name, plus the relationship for minors.
    - Signature pad, or "Create signature from name".
    - "Sign later" checks the patient in without consent, but no dentist can see them until it is signed.
-6. **Done:** a big queue number (from 1 each day) and the warnings for the dentist.
+6. **Done:** a large queue-number ticket (from 1 each day) and the warnings for the dentist.
+
+A side panel shows the five steps, where you are, and a short how-to for the current step.
 
 ## Stations
 All stations share these features:

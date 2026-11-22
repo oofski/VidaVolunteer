@@ -1,6 +1,7 @@
 // VIDA Dental — small UI toolkit shared by every screen.
 // Everything is built with DOM nodes and text nodes (never innerHTML with
 // data), so names typed by anyone always show as plain text.
+import { icon } from './icons.js';
 
 export const F = window.VidaForms;
 
@@ -74,7 +75,7 @@ export function modal({ title, body, actions = [], wide = false, onClose }) {
   const esc = (e) => { if (e.key === 'Escape') close(); };
   document.addEventListener('keydown', esc);
   const box = h('div', { class: 'modal' + (wide ? ' modal-wide' : ''), role: 'dialog', 'aria-modal': 'true', 'aria-label': title },
-    h('div', { class: 'modal-head' }, h('h2', null, title), h('button', { class: 'icon-btn', 'aria-label': 'Close', onclick: close }, '✕')),
+    h('div', { class: 'modal-head' }, h('h2', null, title), h('button', { class: 'icon-btn', 'aria-label': 'Close', onclick: close }, icon('close', 20))),
     h('div', { class: 'modal-body' }, body),
     actions.length ? h('div', { class: 'modal-actions' }, actions.map(a => h('button', {
       class: 'btn ' + (a.kind ? 'btn-' + a.kind : ''),
@@ -172,7 +173,7 @@ export function pill(text, kind = '') { return h('span', { class: 'pill ' + (kin
 
 export function flagPills(flags) {
   if (!flags || !flags.length) return null;
-  return h('div', { class: 'flags' }, flags.map(f => pill('⚠ ' + f, 'danger')));
+  return h('div', { class: 'flags' }, flags.map(f => pill([icon('warningFilled', 12), f], 'danger')));
 }
 
 export function emptyState(title, text, action) {
@@ -211,13 +212,18 @@ export async function speak(text, lang, onEnd) {
 }
 export function stopSpeaking() { if ('speechSynthesis' in window) speechSynthesis.cancel(); }
 
-export function readAloudButton(getText, lang) {
+// A "read aloud" button. `compact` shows only the speaker icon.
+export function readAloudButton(getText, lang, compact = false) {
   let speaking = false;
-  const btn = h('button', { type: 'button', class: 'btn btn-ghost btn-sm' }, '\u{1F50A} ' + (lang === 'es' ? 'Leer en voz alta' : 'Read aloud'));
+  const label = lang === 'es' ? 'Leer en voz alta' : 'Read aloud';
+  const stop = lang === 'es' ? 'Detener' : 'Stop';
+  const btn = h('button', { type: 'button', class: compact ? 'icon-btn read-btn' : 'btn btn-ghost btn-sm', title: label, 'aria-label': label });
+  const draw = () => { btn.replaceChildren(...(compact ? [icon(speaking ? 'close' : 'speaker', 20)] : [speaking ? stop : label, icon(speaking ? 'close' : 'speaker', 16)])); };
+  draw();
   btn.addEventListener('click', async () => {
-    if (speaking) { stopSpeaking(); speaking = false; btn.textContent = '\u{1F50A} ' + (lang === 'es' ? 'Leer en voz alta' : 'Read aloud'); return; }
-    const ok = await speak(getText(), lang, () => { speaking = false; btn.textContent = '\u{1F50A} ' + (lang === 'es' ? 'Leer en voz alta' : 'Read aloud'); });
-    if (ok) { speaking = true; btn.textContent = '■ ' + (lang === 'es' ? 'Detener' : 'Stop'); }
+    if (speaking) { stopSpeaking(); speaking = false; draw(); return; }
+    const ok = await speak(getText(), lang, () => { speaking = false; draw(); });
+    if (ok) { speaking = true; draw(); }
   });
   return btn;
 }

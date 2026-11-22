@@ -1,6 +1,7 @@
 // Triage: the dentist sees the next five in line, records the complaint,
 // vital signs and findings on the tooth chart, and routes the patient.
 import { h, add, call, attempt, field, input, checkbox, F, toast } from '../lib.js';
+import { icon } from '../icons.js';
 import { station, stationEmpty } from './station.js';
 import { patientHeader, medicalSummary, previousVisits, toothChart, takeConsentDialog } from '../components.js';
 
@@ -49,7 +50,7 @@ function openTriage(app, v, panel, reload) {
   });
   const routeBoxes = h('div', { class: 'route-pick' }, cleanBox, restBox, examBox);
 
-  const saveBtn = h('button', { class: 'btn btn-primary btn-lg' }, v.status === 'waiting_triage' ? 'Save and send on →' : 'Save triage');
+  const saveBtn = h('button', { class: 'btn btn-primary btn-lg' }, ...(v.status === 'waiting_triage' ? ['Save and send on', icon('arrowRight', 16)] : ['Save triage']));
   saveBtn.addEventListener('click', async () => {
     if (!v.consent_signed) { toast('Take the consent first.', 'error'); return takeConsentDialog(v, app.user.name, () => reload(v.id)); }
     saveBtn.disabled = true;

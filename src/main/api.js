@@ -24,10 +24,11 @@ function createApi(store, services = {}) {
     'auth:list': ['public', () => store.loginList().map(u => ({ id: u.id, name: u.name, role_label: u.role_label }))],
     'auth:login': ['public', (s, a) => { const u = store.login(a.id, a.pin); s.user = u; return u; }],
     'auth:logout': ['public', (s) => { if (s.user) store.audit(s.user, 'auth.logout', 'staff', s.user.id, null); s.user = null; return true; }],
-    'auth:me': ['public', (s) => s.user || null],
+    'auth:me': ['public', (s) => { s.user = s.user ? store.getStaff(s.user.id) : null; return s.user; }],
 
     // ---- staff (any signed-in person)
     'auth:changeOwnPin': ['staff', (s, a) => store.setStaffPin(s.user, s.user.id, a.pin)],
+    'training:done': ['staff', (s, a) => store.setTourDone(s.user, a.name, a.done !== false)],
     'settings:get': ['staff', () => store.publicSettings()],
     'events:list': ['staff', () => store.listEvents()],
     'events:active': ['staff', () => store.activeEvent()],
@@ -53,6 +54,7 @@ function createApi(store, services = {}) {
     'staff:update': ['admin', (s, a) => store.updateStaff(s.user, a)],
     'staff:setActive': ['admin', (s, a) => store.setStaffActive(s.user, a.id, !!a.active)],
     'staff:setPin': ['admin', (s, a) => store.setStaffPin(s.user, a.id, a.pin)],
+    'staff:resetTraining': ['admin', (s, a) => store.resetTours(s.user, a.id)],
     'events:create': ['admin', (s, a) => store.createEvent(s.user, a)],
     'events:update': ['admin', (s, a) => store.updateEvent(s.user, a)],
     'events:setActive': ['admin', (s, a) => store.setActiveEvent(s.user, a.id)],

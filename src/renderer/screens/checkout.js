@@ -2,6 +2,7 @@
 // language, prescriptions from the on-site pharmacy (with allergy checks),
 // follow-up for the next trip, and the end-of-visit survey.
 import { h, add, mount, call, attempt, field, input, select, checkbox, F, toast, readAloudButton, confirmBox, modal } from '../lib.js';
+import { icon } from '../icons.js';
 import { station, stationEmpty } from './station.js';
 import { patientHeader, treatmentLine, chartSummary, takeConsentDialog } from '../components.js';
 
@@ -59,9 +60,9 @@ function openCheckout(app, v, panel, reload) {
   async function checkRx() {
     const res = await call('visits:prescriptionCheck', { id: v.id, items: rx.map(r => ({ id: r.id })) }).catch(() => ({ warnings: [], blocks: [] }));
     mount(warnBox,
-      res.blocks.map(b => h('div', { class: 'notice notice-danger' }, '⛔ Not allowed — ' + b)),
-      res.warnings.length ? h('div', { class: 'notice notice-warn' }, '⚠ ' + res.warnings.join(' '),
-        h('div', null, checkbox('Dentist confirmed this is safe', acknowledged, (x) => { acknowledged = x; }))) : null);
+      res.blocks.map(b => h('div', { class: 'notice notice-danger' }, icon('warningFilled', 20), h('div', null, h('b', null, 'Not allowed. '), b))),
+      res.warnings.length ? h('div', { class: 'notice notice-warn' }, icon('warning', 20), h('div', null, res.warnings.join(' '),
+        h('div', null, checkbox('Dentist confirmed this is safe', acknowledged, (x) => { acknowledged = x; })))) : null);
   }
   function drawRx() {
     const pharmacy = app.settings.pharmacy;
@@ -71,7 +72,7 @@ function openCheckout(app, v, panel, reload) {
         h('div', { class: 'row' },
           field('Quantity', input({ value: r.quantity || '', maxlength: 30, class: 'num-input', oninput: (e) => { r.quantity = e.target.value; } })),
           field(L('Instructions (English)', 'Instrucciones (español)'), input({ value: r.instructions, maxlength: 300, oninput: (e) => { r.instructions = e.target.value; } }), { wide: true }),
-          h('button', { class: 'icon-btn', 'aria-label': 'Remove', onclick: () => { rx.splice(i, 1); drawRx(); } }, '✕')))),
+          h('button', { class: 'icon-btn', 'aria-label': 'Remove', onclick: () => { rx.splice(i, 1); drawRx(); } }, icon('trash', 16))))),
       h('div', { class: 'row' },
         select([{ value: '', label: '+ Add from the pharmacy…' }].concat(pharmacy.map(p => ({ value: p.id, label: p.name }))), '', {
           onchange: (e) => {
@@ -90,7 +91,7 @@ function openCheckout(app, v, panel, reload) {
       h('div', { class: 'row' }, h('div', { class: 'survey-q grow' }, F.SURVEY.rating[lang]), readAloudButton(() => F.SURVEY.rating[lang] + ' ' + F.SURVEY.helped[lang], lang)),
       h('div', { class: 'rating' }, [1, 2, 3, 4, 5].map(n => h('button', {
         type: 'button', class: 'rate' + (survey.rating === n ? ' on' : ''), onclick: () => { survey.rating = survey.rating === n ? null : n; drawSurvey(); }
-      }, h('span', { class: 'rate-face' }, ['☹', '\u{1F641}', '\u{1F610}', '\u{1F642}', '\u{1F600}'][n - 1]), h('span', null, F.SURVEY.ratingLabels[lang][n - 1])))),
+      }, h('span', { class: 'rate-n' }, String(n)), h('span', null, F.SURVEY.ratingLabels[lang][n - 1])))),
       h('div', { class: 'survey-q' }, F.SURVEY.helped[lang]),
       h('textarea', { rows: 2, maxlength: 1000, oninput: (e) => { survey.helped = e.target.value; } }, survey.helped));
   }
@@ -106,7 +107,7 @@ function openCheckout(app, v, panel, reload) {
     [t.cleaning?.provider, t.restorative?.provider].filter(Boolean).length ? h('div', { class: 'muted small' }, 'Seen by: ' + [...new Set([v.triaged_by, t.cleaning?.provider, t.restorative?.provider].filter(Boolean))].join(', ')) : null);
 
   const ready = v.status === 'ready_checkout';
-  const doneBtn = h('button', { class: 'btn btn-primary btn-lg' }, 'Check out ✓');
+  const doneBtn = h('button', { class: 'btn btn-primary btn-lg' }, 'Check out', icon('checkmark', 16));
   doneBtn.addEventListener('click', async () => {
     if (!ready && !(await confirmBox('Check out early?', 'This patient has not finished every station. Check them out anyway?', 'Check out'))) return;
     doneBtn.disabled = true;
@@ -121,7 +122,7 @@ function openCheckout(app, v, panel, reload) {
 
   add(panel,
     patientHeader(v, { onConsent: () => takeConsentDialog(v, app.user.name, () => reload(v.id)) }),
-    v.flags.length ? h('div', { class: 'notice notice-danger' }, '⚠ ' + v.flags.join(' · ')) : null,
+    v.flags.length ? h('div', { class: 'notice notice-danger' }, icon('warningFilled', 20), h('div', null, v.flags.join(' · '))) : null,
     v.locked ? h('div', { class: 'notice notice-info' }, v.status === 'left' ? 'This patient left without care.' : `Checked out by ${v.checked_out_by}.`) : null,
     h('div', { class: 'card' }, h('h3', null, 'Recap'), recap),
     h('div', { class: 'card' }, h('h3', null, 'After-care instructions'), careBox),

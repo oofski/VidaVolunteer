@@ -1,5 +1,6 @@
 // Education station: record what was taught and send the patient on.
 import { h, add, call, attempt, field, checkbox, F } from '../lib.js';
+import { icon } from '../icons.js';
 import { station, stationEmpty } from './station.js';
 import { patientHeader, takeConsentDialog } from '../components.js';
 
@@ -15,7 +16,7 @@ export async function education(app, el, params) {
       const prev = v.education || {};
       const topics = new Set(prev.topics || ['brushing', 'kit']);
       let notes = prev.notes || '';
-      const btn = h('button', { class: 'btn btn-primary btn-lg' }, v.status === 'waiting_education' ? 'Done — send to treatment →' : 'Save');
+      const btn = h('button', { class: 'btn btn-primary btn-lg' }, v.status === 'waiting_education' ? ['Done — send to treatment', icon('arrowRight', 16)] : 'Save');
       btn.addEventListener('click', async () => {
         btn.disabled = true;
         const r = await attempt(() => call('visits:education', { id: v.id, education: { topics: [...topics], notes } }), 'Education saved.');

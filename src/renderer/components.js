@@ -1,6 +1,7 @@
 // VIDA Dental — reusable pieces: signature pad, tooth chart, patient header,
 // consent form.
 import { h, mount, F, toast, field, input, select, checkbox, readAloudButton, flagPills, pill, fullName, sexLabel, fmtDate, call, attempt, modal } from './lib.js';
+import { icon } from './icons.js';
 
 // ---- signature pad --------------------------------------------------------
 // Counts as signed only once a real line is drawn (a tap is not a signature),
@@ -53,7 +54,7 @@ export function signaturePad({ lang = 'es', getName } = {}) {
   }
   function signed() { return !!typed || inkLength() > 40; }
   function update() {
-    status.textContent = signed() ? (lang === 'es' ? '✓ Firmado' : '✓ Signed') : (lang === 'es' ? 'Firme con el dedo o el mouse' : 'Sign with a finger or the mouse');
+    status.textContent = signed() ? (lang === 'es' ? 'Firmado' : 'Signed') : (lang === 'es' ? 'Firme con el dedo o el mouse' : 'Sign with a finger or the mouse');
     status.classList.toggle('ok', signed());
   }
   function pos(e) {
@@ -188,8 +189,8 @@ export function patientHeader(v, { onConsent } = {}) {
       h('div', { class: 'ph-pills' },
         pill(v.status_label, 'status'),
         v.previous_visits && v.previous_visits.length ? pill(`Returning · ${v.previous_visits.length} past visit${v.previous_visits.length > 1 ? 's' : ''}`, 'info') : pill('First visit', ''),
-        v.consent_signed ? pill('✓ Consent signed', 'ok')
-          : h('button', { class: 'pill pill-warn pill-btn', onclick: () => onConsent && onConsent() }, '✎ Consent missing — take it now'),
+        v.consent_signed ? pill([icon('checkFilled', 12), 'Consent signed'], 'ok')
+          : h('button', { class: 'pill pill-warn pill-btn', onclick: () => onConsent && onConsent() }, icon('pen', 12), 'Consent missing — take it now'),
         v.triage && v.triage.priority === 'urgent' ? pill('Urgent', 'danger') : null)
     ),
     flagPills(v.flags)
@@ -217,7 +218,7 @@ export function previousVisits(v, numbering) {
       h('div', null, h('b', null, fmtDate(p.visit_date)), ' · ', p.event_name, p.trip_code ? ` (${p.trip_code})` : '', ' · ', p.status_label),
       p.triage?.complaint ? h('div', { class: 'muted' }, 'Complaint: ' + p.triage.complaint) : null,
       treatmentLine(p.treatment, numbering),
-      p.checkout?.follow_up?.needed ? h('div', { class: 'follow' }, '↻ Follow-up: ' + p.checkout.follow_up.reason) : null
+      p.checkout?.follow_up?.needed ? h('div', { class: 'follow' }, 'Follow-up: ' + p.checkout.follow_up.reason) : null
     )));
 }
 

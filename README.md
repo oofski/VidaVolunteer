@@ -11,12 +11,13 @@ Offline dental clinic software for **VIDA (Vida Volunteer)** pop-up clinics and 
 3. **Before the clinic:**
    - Under **Staff**, add each volunteer and give them a PIN.
    - Under **Clinic events**, create the clinic and start it.
-4. **On the day:** Check-in → Triage → Education → Treatment (Cleaning, or Restorative / extraction) → Checkout.
-5. **After each day:** under **Settings & backup**, choose **Back up now** and copy the file to VIDA's Google Drive.
+4. **Training:** each person is offered the **registration walkthrough** the first time they sign in. It is a hands-on practice that saves nothing. Replay it from the **?** button in the header.
+5. **On the day:** Registration → Triage → Education → Treatment (Cleaning, or Restorative / extraction) → Checkout.
+6. **After each day:** under **Settings & backup**, choose **Back up now** and copy the file to VIDA's Google Drive.
 
 ### Updates
 
-- Open **Version … / Update available** at the bottom of the sidebar.
+- Click the version number (or **Update …**) in the header.
 - **Check for updates → Download**, then an administrator presses **Restart & install**.
 - With no internet, copy a newer `VIDA-Dental-Setup-x.y.z.exe` onto a USB drive. Then choose **From a USB drive or folder → Choose installer file**.
 
@@ -25,6 +26,8 @@ Offline dental clinic software for **VIDA (Vida Volunteer)** pop-up clinics and 
 | Part | Where |
 |---|---|
 | Screens (plain HTML, CSS and JavaScript, no build step) | `src/renderer/` |
+| Look and feel: IBM Carbon Design System tokens, IBM Plex fonts and Carbon icons, bundled for offline use | `src/renderer/styles.css`, `src/renderer/fonts/`, `src/renderer/icons.js` |
+| Guided walkthrough engine | `src/renderer/tour.js` |
 | Forms, questions, consent text and validation, shared by the screens and the data layer | `src/shared/forms.js` |
 | Every allowed action, with who may run it (public / staff / admin), checked in the main process | `src/main/api.js` |
 | Local database (built-in `node:sqlite`, no native modules) and all clinic rules | `src/main/db.js` |
