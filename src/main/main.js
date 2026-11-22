@@ -47,8 +47,15 @@ function autoBackup(reason) {
     const dest = path.join(dir, `auto-${stamp()}-${reason}.db`);
     if (fs.existsSync(dest)) return;
     store.backupTo(null, dest);
-    const files = fs.readdirSync(dir).filter(f => f.startsWith('auto-')).sort();
-    while (files.length > 14) fs.unlinkSync(path.join(dir, files.shift()));
+    // One copy per day is kept for 30 days; the frequent copies for the last 24.
+    const daily = path.join(dir, `daily-${stamp().slice(0, 10)}.db`);
+    if (!fs.existsSync(daily)) fs.copyFileSync(dest, daily);
+    const prune = (prefix, keep) => {
+      const files = fs.readdirSync(dir).filter(f => f.startsWith(prefix)).sort();
+      while (files.length > keep) fs.unlinkSync(path.join(dir, files.shift()));
+    };
+    prune('auto-', 24);
+    prune('daily-', 30);
   } catch (e) { console.error('[backup] automatic backup failed', e); }
 }
 

@@ -67,6 +67,11 @@ async function run(win) {
   await js(`document.querySelector('[data-tour=new]').click();`); await wait(700);
   await shot('02b-tour-details');
   await next(); await next();                                     // form, date of birth
+  // A refused click (a required field is empty) must not move the walkthrough on.
+  await js(`$type($field('Nombre'), ''); document.querySelector('[data-tour=reg-next]').click();`); await wait(1200);
+  const stuck = await tourStep();
+  if (!/Step 6 of 13/.test(stuck)) errors.push('walkthrough moved on after a refused click: ' + stuck);
+  await js(`$type($field('Nombre'), 'Rosa');`);
   await js(`document.querySelector('[data-tour=reg-next]').click();`); await wait(800);
   await shot('02c-tour-question');
   await js(`document.querySelector('[data-tour=q-first] [data-v="no"]').click();`); await wait(900);

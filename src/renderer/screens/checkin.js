@@ -159,12 +159,12 @@ export async function checkin(app, el, params) {
       if (matches.length) {
         const choice = await new Promise((resolve) => {
           let picked = false;
-          modal({
+          const dlg = modal({
             title: 'This may be a returning patient',
             body: h('div', { class: 'stack' }, h('p', null, 'A patient with the same name is already on file:'),
               matches.map(m => h('div', { class: 'result' }, h('div', null, h('div', { class: 'result-name' }, fullName(m)),
                 h('div', { class: 'muted' }, `Born ${F.formatDob(m.dob)} · ${m.community || ''} · phone ${m.phone || 'none'}`)),
-                h('button', { class: 'btn btn-primary btn-sm', onclick: (e) => { picked = true; resolve(m.id); e.target.closest('.modal-backdrop').remove(); } }, 'Same person')))),
+                h('button', { class: 'btn btn-primary btn-sm', onclick: () => { picked = true; resolve(m.id); dlg.close(); } }, 'Same person')))),
             onClose: () => { if (!picked) resolve(null); },
             actions: [{ label: 'No, a different person', onclick: () => { picked = true; resolve(null); } }]
           });
@@ -272,6 +272,11 @@ export async function checkin(app, el, params) {
       try {
         s.visit = await call('visits:checkIn', { patient_id: s.patientId, registration: s.reg, medical: s.medical, language: s.lang });
       } catch (e) { toast(e.message, 'error'); return; }
+    } else {
+      // Already registered (an earlier consent save failed). Keep any
+      // corrections made to the medical history since then.
+      try { s.visit = await call('visits:updateMedical', { id: s.visit.id, medical: s.medical }); }
+      catch (e) { toast(e.message, 'error'); return; }
     }
     if (consent) {
       try { s.visit = await call('visits:signConsent', { id: s.visit.id, consent }); }

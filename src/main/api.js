@@ -38,7 +38,8 @@ function createApi(store, services = {}) {
     'patients:matches': ['staff', (s, a) => store.findMatches(a && a.registration)],
     'patients:get': ['staff', (s, a) => store.getPatient(s.user, a.id)],
     'visits:checkIn': ['staff', (s, a) => store.checkIn(s.user, a)],
-    'visits:get': ['staff', (s, a) => store.getVisit(s.user, a.id, { silent: !!a.silent })],
+    // Every view is audited; the screens cannot turn that off.
+    'visits:get': ['staff', (s, a) => store.getVisit(s.user, a.id)],
     'visits:updateMedical': ['staff', (s, a) => store.updateMedical(s.user, a.id, a.medical)],
     'visits:signConsent': ['staff', (s, a) => store.signConsent(s.user, a.id, a.consent)],
     'visits:triage': ['staff', (s, a) => store.saveTriage(s.user, a.id, a.triage)],

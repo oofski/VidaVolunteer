@@ -27,7 +27,8 @@ export async function events(app, el) {
           h('button', { class: 'btn btn-sm', onclick: () => editEvent(e) }, 'Edit'),
           e.status === 'open' && !e.active ? h('button', { class: 'btn btn-sm btn-primary', onclick: async () => { if (await attempt(() => call('events:setActive', { id: e.id }), 'Clinic started.')) { await app.refreshInfo(); load(); } } }, 'Start') : null,
           e.status === 'open' ? h('button', { class: 'btn btn-sm', onclick: async () => {
-            if (!(await confirmBox('Finish this clinic?', `"${e.name}" stops taking check-ins. Every patient record is kept and stays searchable.`, 'Finish clinic'))) return;
+            const still = e.in_clinic ? ` ${e.in_clinic} patient${e.in_clinic > 1 ? 's are' : ' is'} still in the clinic and not checked out; they will no longer appear at any station. Check them out (or mark "Left without care") first if you can.` : '';
+            if (!(await confirmBox('Finish this clinic?', `"${e.name}" stops taking check-ins. Every patient record is kept and stays searchable.${still}`, e.in_clinic ? 'Finish anyway' : 'Finish clinic', e.in_clinic ? 'danger' : 'primary'))) return;
             if (await attempt(() => call('events:finish', { id: e.id }), 'Clinic finished.')) { await app.refreshInfo(); load(); }
           } }, 'Finish') : h('button', { class: 'btn btn-sm', onclick: async () => { if (await attempt(() => call('events:reopen', { id: e.id }), 'Re-opened.')) load(); } }, 'Re-open'),
           e.patients === 0 ? h('button', { class: 'btn btn-sm btn-ghost', onclick: async () => {
@@ -37,7 +38,7 @@ export async function events(app, el) {
   }
 
   function editEvent(e) {
-    const s = e ? { ...e } : { name: '', trip_code: '', country: '', community: '', start_date: new Date().toISOString().slice(0, 10), end_date: '', season: '', target_patients: '', make_active: true };
+    const s = e ? { ...e } : { name: '', trip_code: '', country: '', community: '', start_date: F.localToday(), end_date: '', season: '', target_patients: '', make_active: true };
     const f = (key, label, attrs = {}) => field(label, input({ value: s[key] ?? '', oninput: (ev) => { s[key] = ev.target.value; }, ...attrs }));
     modal({
       title: e ? 'Edit clinic' : 'New clinic', wide: true,

@@ -14,12 +14,20 @@ import { icon } from './icons.js';
 export function runTour(steps, { onFinish, onExit } = {}) {
   let i = 0;
   let stepStarted = 0;
-  let clickedAt = -1;
+  // After a click on the highlighted control: wait for the next screen.
+  let clicked = null;
   let ended = false;
   const dims = [0, 1, 2, 3].map(() => h('div', { class: 'tour-dim' }));
   const ring = h('div', { class: 'tour-ring' });
   const card = h('div', { class: 'tour-card', role: 'dialog', 'aria-live': 'polite' });
   document.body.append(...dims, ring, card);
+  // The dimmed area blocks clicks but must still let the page scroll.
+  const onWheel = (e) => {
+    const box = document.querySelector('.panel') || document.getElementById('content');
+    if (box) box.scrollBy({ top: e.deltaY, left: e.deltaX });
+    e.preventDefault();
+  };
+  for (const d of dims) d.addEventListener('wheel', onWheel, { passive: false });
 
   const find = (s) => (typeof s.target === 'function' ? s.target() : document.querySelector(s.target));
 
@@ -41,6 +49,7 @@ export function runTour(steps, { onFinish, onExit } = {}) {
 
   function start(n) {
     i = n;
+    clicked = null;
     stepStarted = performance.now();
     drawCard();
     const el = find(steps[i]);
@@ -52,15 +61,14 @@ export function runTour(steps, { onFinish, onExit } = {}) {
     start(i + 1);
   }
 
-  // A click on the highlighted control moves on once the screen has reacted.
+  // A click on the highlighted control only counts once the screen has really
+  // moved on (the next step's control appears). If the click was refused
+  // (a missing field, no signature), the step stays put.
   function onClick(e) {
     const s = steps[i];
     if (!s || s.do !== 'click') return;
     const el = find(s);
-    if (el && el.contains(e.target)) {
-      clickedAt = i;
-      setTimeout(() => { if (!ended && clickedAt === i) next(); }, 250);
-    }
+    if (el && el.contains(e.target)) clicked = { step: i, at: performance.now() };
   }
   function onKey(e) { if (e.key === 'Escape') end(false); }
   document.addEventListener('click', onClick, true);
@@ -93,6 +101,12 @@ export function runTour(steps, { onFinish, onExit } = {}) {
       ring.style.display = 'none';
     }
     positionCard(r, vw, vh);
+    if (clicked && clicked.step === i) {
+      const after = steps[i + 1];
+      const waited = performance.now() - clicked.at;
+      if (waited > 150 && (!after || find(after))) next();
+      else if (waited > 4000) clicked = null;
+    }
     if (s.until && performance.now() - stepStarted > 300) {
       let done = false;
       try { done = !!s.until(); } catch { done = false; }

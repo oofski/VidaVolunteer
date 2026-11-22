@@ -36,9 +36,7 @@ const OPEN_STATUSES = ['waiting_triage', 'waiting_education', 'waiting_treatment
 const SCHEMA_VERSION = 2;
 
 function nowIso() { return new Date().toISOString(); }
-function localDate(d = new Date()) {
-  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
-}
+function localDate() { return F.localToday(); }
 function uid() { return crypto.randomUUID(); }
 function j(v) { return JSON.stringify(v == null ? null : v); }
 function pj(v, fallback) {
@@ -309,9 +307,10 @@ function createStore(db, file) {
   function eventRow(r) {
     if (!r) return null;
     const counts = q(`SELECT COUNT(*) total,
-        SUM(CASE WHEN status = 'checked_out' THEN 1 ELSE 0 END) done
+        SUM(CASE WHEN status = 'checked_out' THEN 1 ELSE 0 END) done,
+        SUM(CASE WHEN status IN (${OPEN_STATUSES.map(x => `'${x}'`).join(',')}) THEN 1 ELSE 0 END) open
         FROM visits WHERE event_id = ? AND status != 'left'`).get(r.id);
-    return { ...r, active: Number(getSetting('active_event_id')) === r.id, patients: counts.total || 0, checked_out: counts.done || 0 };
+    return { ...r, active: Number(getSetting('active_event_id')) === r.id, patients: counts.total || 0, checked_out: counts.done || 0, in_clinic: counts.open || 0 };
   }
   function listEvents() {
     return q('SELECT * FROM events ORDER BY COALESCE(start_date, created_at) DESC, id DESC').all().map(eventRow);
@@ -807,6 +806,7 @@ function createStore(db, file) {
         ORDER BY v.visit_date, v.queue_number`).all(...[ev.id].concat(filter.today ? [localDate()] : []));
     const visits = rows.map(r => {
       const triage = pj(r.triage, null);
+      const tr = pj(r.treatment, {});
       return {
         id: r.id, queue_number: r.queue_number, visit_date: r.visit_date, status: r.status, status_label: STATUSES[r.status],
         first_name: r.first_name, last_name: r.last_name, age: F.ageOn(r.dob, r.visit_date), sex: r.sex,
@@ -815,6 +815,7 @@ function createStore(db, file) {
         complaint: triage ? triage.complaint : (pj(r.medical, {}).reason || ''),
         route_cleaning: !!r.route_cleaning, route_restorative: !!r.route_restorative,
         cleaning_done: !!r.cleaning_done, restorative_done: !!r.restorative_done,
+        cleaning_started: !!tr.cleaning, restorative_started: !!tr.restorative,
         checked_in_at: r.checked_in_at, checked_out_at: r.checked_out_at, triaged_by: r.triaged_by,
         updated_at: r.updated_at
       };

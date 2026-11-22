@@ -5,10 +5,12 @@ import { icon } from '../icons.js';
 import { station, stationEmpty } from './station.js';
 import { patientHeader, medicalSummary, previousVisits, toothChart, takeConsentDialog, chartSummary } from '../components.js';
 
+// The chosen tab, remembered for the person who chose it.
 let current = null;
+let currentFor = null;
 
 export async function treatment(app, el, params) {
-  if (!current) current = app.user.role === 'assistant' ? 'cleaning' : 'restorative';
+  if (!current || currentFor !== app.user.id) { current = app.user.role === 'assistant' ? 'cleaning' : 'restorative'; currentFor = app.user.id; }
   const isC = () => current === 'cleaning';
   await station(app, el, params, {
     route: 'treatment',
@@ -20,14 +22,21 @@ export async function treatment(app, el, params) {
     sections: (all) => {
       const routed = all.filter(v => (isC() ? v.route_cleaning : v.route_restorative));
       const done = (v) => (isC() ? v.cleaning_done : v.restorative_done);
+      // "In the chair" means work was started at THIS station; a patient busy
+      // at the other station still waits here.
+      const started = (v) => (isC() ? v.cleaning_started : v.restorative_started);
       return [
-        { title: 'In the chair', items: routed.filter(v => v.status === 'in_treatment' && !done(v)) },
-        { title: 'Waiting', items: routed.filter(v => v.status === 'waiting_treatment' && !done(v)).sort((a, b) => (b.priority === 'urgent') - (a.priority === 'urgent') || a.queue_number - b.queue_number) },
+        { title: 'In the chair', items: routed.filter(v => v.status === 'in_treatment' && started(v) && !done(v)) },
+        { title: 'Waiting', items: routed.filter(v => !done(v) && (v.status === 'waiting_treatment' || (v.status === 'in_treatment' && !started(v)))).sort((a, b) => (b.priority === 'urgent') - (a.priority === 'urgent') || a.queue_number - b.queue_number) },
         { title: 'Still at triage or education', items: routed.filter(v => v.status === 'waiting_education'), folded: true },
         { title: 'Finished here today', items: routed.filter(v => done(v)).reverse(), folded: true }
       ];
     },
-    extra: (v) => (isC() ? (v.route_restorative && !v.restorative_done ? pill('Also restorative', '') : null) : (v.route_cleaning && !v.cleaning_done ? pill('Also cleaning', '') : null)),
+    extra: (v) => {
+      const otherStarted = isC() ? v.restorative_started && !v.restorative_done : v.cleaning_started && !v.cleaning_done;
+      if (v.status === 'in_treatment' && otherStarted) return pill(isC() ? 'Busy at restorative' : 'Busy at cleaning', 'warn');
+      return isC() ? (v.route_restorative && !v.restorative_done ? pill('Also restorative', '') : null) : (v.route_cleaning && !v.cleaning_done ? pill('Also cleaning', '') : null);
+    },
     empty: () => stationEmpty(isC() ? 'Pick a patient waiting for a cleaning.' : 'Pick a patient waiting for restorative work or an extraction.'),
     open: (v, panel, reload) => openTreatment(app, v, panel, reload, current)
   });

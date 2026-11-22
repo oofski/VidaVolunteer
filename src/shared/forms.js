@@ -279,6 +279,13 @@
 
   // ---- Dates and ages -----------------------------------------------------
 
+  // Today's date on the laptop's own clock (not UTC: in Central America the
+  // UTC date is already tomorrow every evening).
+  function localToday() {
+    const d = new Date();
+    return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+  }
+
   // Dates are typed DD/MM/YYYY (Central American order) and stored ISO.
   function parseDob(text) {
     const s = String(text || '').trim();
@@ -291,8 +298,7 @@
     const dt = new Date(Date.UTC(y, m - 1, d));
     if (dt.getUTCMonth() !== m - 1 || dt.getUTCDate() !== d) return null;
     const iso = `${y}-${String(m).padStart(2, '0')}-${String(d).padStart(2, '0')}`;
-    const today = new Date().toISOString().slice(0, 10);
-    if (iso > today) return null;
+    if (iso > localToday()) return null;
     return iso;
   }
   function formatDob(iso) {
@@ -301,7 +307,7 @@
   }
   function ageOn(dobIso, onIso) {
     if (!dobIso) return null;
-    const on = onIso || new Date().toISOString().slice(0, 10);
+    const on = onIso || localToday();
     const [y, m, d] = dobIso.split('-').map(Number);
     const [oy, om, od] = on.split('-').map(Number);
     let age = oy - y;
@@ -400,7 +406,7 @@
     DEFAULT_MEDICATIONS, DEFAULT_PHARMACY, EDUCATION_TOPICS, AFTERCARE,
     CONSENT, CONSENT_VERSION, GUARDIAN_RELATIONSHIPS, SURVEY,
     EXTRACTION_TYPES, ANESTHETICS, SURFACES, FILLING_MATERIALS, CLEANING_PROCEDURES, TOOTH_MARKS,
-    toothLabel, isValidTooth, chartRows, parseDob, formatDob, ageOn, clean,
+    toothLabel, isValidTooth, chartRows, parseDob, formatDob, ageOn, localToday, clean,
     validateRegistration, validateMedical, medicalQuestionsFor, flagsFor, seasonFor
   };
 });

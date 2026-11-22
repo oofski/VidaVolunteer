@@ -305,3 +305,46 @@ test('a version-1 database upgrades in place and keeps its data', async () => {
   assert.deepEqual(s2.loginList()[0].tours, []);
   s2.close();
 });
+
+test('review fixes: per-station progress, audited views, clinic "still in" count, local dates', async () => {
+  const { api } = fresh();
+  const admin = await setupAdmin(api);
+  const ev = await api.call(admin, 'events:create', { name: 'Trip' });
+  const v = await api.call(admin, 'visits:checkIn', { registration: REG, medical: answers(), language: 'es' });
+  const id = v.data.id;
+  await api.call(admin, 'visits:signConsent', { id, consent: { agree: true, signer_name: 'Ana', signature: fakeSignature() } });
+  await api.call(admin, 'visits:triage', { id, triage: { route_cleaning: true, route_restorative: true, skip_education: true } });
+  await api.call(admin, 'visits:treatment', { id, station: 'cleaning', data: { procedures: { prophy: true } } });
+  const row = (await api.call(admin, 'queue:get', {})).data.visits.find(x => x.id === id);
+  assert.equal(row.status, 'in_treatment');
+  assert.equal(row.cleaning_started, true, 'work started at cleaning');
+  assert.equal(row.restorative_started, false, 'nothing started at restorative, so it is not "in the chair" there');
+
+  // A screen cannot suppress the audit of a view.
+  await api.call(admin, 'visits:get', { id, silent: true });
+  const log = (await api.call(admin, 'audit:list', {})).data;
+  assert.equal(log[0].action, 'visit.view');
+
+  // Finishing warns about patients still in the clinic.
+  const list = (await api.call(admin, 'events:list')).data;
+  assert.equal(list.find(e => e.id === ev.data.id).in_clinic, 1);
+
+  // Ages use the laptop's own date.
+  const F = require('../src/shared/forms.js');
+  const today = F.localToday();
+  const d = new Date();
+  assert.equal(today, `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`);
+  const [y, m, dd] = today.split('-').map(Number);
+  assert.equal(F.ageOn(`${y - 18}-${String(m).padStart(2, '0')}-${String(dd).padStart(2, '0')}`), 18, 'turns 18 today, local time');
+});
+
+test('review fix: correcting the medical history after a failed consent save is kept', async () => {
+  const { api } = fresh();
+  const admin = await setupAdmin(api);
+  await api.call(admin, 'events:create', { name: 'Trip' });
+  const v = await api.call(admin, 'visits:checkIn', { registration: REG, medical: answers(), language: 'es' });
+  const bad = await api.call(admin, 'visits:signConsent', { id: v.data.id, consent: { agree: true, signer_name: 'Ana', signature: 'data:image/png;base64,AAAA' } });
+  assert.equal(bad.ok, false);
+  const upd = await api.call(admin, 'visits:updateMedical', { id: v.data.id, medical: answers({ penicillin_allergy: 'yes' }) });
+  assert.deepEqual(upd.data.flags, ['Penicillin allergy']);
+});
