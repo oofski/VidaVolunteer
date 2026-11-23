@@ -1,0 +1,308 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>VIDA Dental — Quick guide</title>
+<style>
+  @font-face { font-family: 'Plex'; src: url('../../src/renderer/fonts/IBMPlexSans-Regular-Latin1.woff2'); font-weight: 400; }
+  @font-face { font-family: 'Plex'; src: url('../../src/renderer/fonts/IBMPlexSans-Medium-Latin1.woff2'); font-weight: 500; }
+  @font-face { font-family: 'Plex'; src: url('../../src/renderer/fonts/IBMPlexSans-SemiBold-Latin1.woff2'); font-weight: 600 700; }
+  @font-face { font-family: 'Plex Mono'; src: url('../../src/renderer/fonts/IBMPlexMono-Regular-Latin1.woff2'); font-weight: 400; }
+  @font-face { font-family: 'Plex Mono'; src: url('../../src/renderer/fonts/IBMPlexMono-SemiBold-Latin1.woff2'); font-weight: 600; }
+  @page { size: Letter; margin: 0; }
+  :root { --ink: #161616; --ink2: #525252; --ink3: #6f6f6f; --line: #e0e0e0; --bg: #f4f4f4; --accent: #F7941D; --dark: #161616; }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; padding: 0; font-family: 'Plex', 'Segoe UI', sans-serif; color: var(--ink); font-size: 11pt; line-height: 1.4; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+  .page { width: 8.5in; height: 11in; padding: 0.55in 0.6in 0.75in; position: relative; page-break-after: always; overflow: hidden; display: flex; flex-direction: column; }
+  .page:last-child { page-break-after: auto; }
+  .head { display: flex; align-items: baseline; gap: 14px; border-bottom: 2px solid var(--ink); padding-bottom: 8px; margin-bottom: 16px; }
+  .num { font-family: 'Plex Mono'; font-weight: 600; background: var(--dark); color: var(--accent); padding: 2px 8px; font-size: 13pt; }
+  .head h1 { font-size: 22pt; font-weight: 400; margin: 0; letter-spacing: -0.2px; }
+  .head .who { margin-left: auto; font-family: 'Plex Mono'; font-size: 8.5pt; color: var(--ink3); text-transform: uppercase; letter-spacing: .5px; }
+  .foot { position: absolute; left: 0.6in; right: 0.6in; bottom: 0.3in; display: flex; justify-content: space-between; font-family: 'Plex Mono'; font-size: 8pt; color: var(--ink3); border-top: 1px solid var(--line); padding-top: 6px; }
+  ol.steps { list-style: none; counter-reset: s; margin: 0 0 14px; padding: 0; display: grid; gap: 6px; }
+  ol.steps li { counter-increment: s; position: relative; padding-left: 32px; font-size: 11pt; min-height: 22px; }
+  ol.steps li::before { content: counter(s); position: absolute; left: 0; top: 0; font-family: 'Plex Mono'; font-weight: 600; font-size: 9.5pt; width: 22px; height: 22px; display: grid; place-items: center; background: var(--accent); color: var(--ink); }
+  ol.steps.two { grid-template-columns: 1fr 1fr; column-gap: 24px; }
+  b { font-weight: 600; }
+  .btn { display: inline-block; font-weight: 600; font-size: 9.5pt; padding: 0 6px; background: var(--accent); color: var(--ink); white-space: nowrap; }
+  .btn.dark { background: #393939; color: #fff; }
+  /* Screenshots fill the space left on the page; if a picture is taller than
+     its share, its lower part is cropped (the important part is at the top). */
+  .shot { border: 1px solid #c6c6c6; display: block; width: 100%; }
+  .shots { display: flex; flex-direction: column; gap: 12px; flex: 1; min-height: 0; }
+  .shots.row { flex-direction: row; }
+  .shots > figure, .shots > .shots { flex: 1 1 0; min-height: 0; min-width: 0; display: flex; flex-direction: column; margin: 0; }
+  .shots figure .shot { flex: none; width: 100%; height: auto; max-height: 100%; min-height: 0; object-fit: cover; object-position: left top; }
+  .shots > .shots.row { flex-direction: row; gap: 12px; flex: 0 0 auto; }
+  .shots.row figure .shot { height: auto; flex: none; object-fit: contain; }
+  figure { margin: 0; }
+  figcaption { font-family: 'Plex Mono'; font-size: 8pt; color: var(--ink3); text-transform: uppercase; letter-spacing: .5px; margin-bottom: 4px; }
+  .tip { border-left: 3px solid var(--accent); background: #fef0de; padding: 7px 12px; font-size: 10pt; margin: 10px 0 0; }
+  .tip b { font-family: 'Plex Mono'; font-size: 8.5pt; letter-spacing: .5px; text-transform: uppercase; margin-right: 6px; }
+  .warn { border-left-color: #da1e28; background: #fff1f1; }
+
+  /* Cover */
+  .cover { background: var(--dark); color: #f4f4f4; padding: 0.9in 0.8in; justify-content: space-between;
+    background-image: linear-gradient(#262626 1px, transparent 1px), linear-gradient(90deg, #262626 1px, transparent 1px); background-size: 32px 32px; }
+  .cover::after { content: ''; position: absolute; left: 0; right: 0; bottom: 0; height: 14px; background: var(--accent); }
+  .cover .logo { font-size: 72pt; font-weight: 700; letter-spacing: 12px; color: var(--accent); line-height: 1; }
+  .cover .sub { font-family: 'Plex Mono'; letter-spacing: 4px; text-transform: uppercase; color: #c6c6c6; margin-top: 12px; }
+  .cover h1 { font-size: 34pt; font-weight: 400; margin: 0.6in 0 8px; }
+  .cover p { color: #c6c6c6; font-size: 13pt; max-width: 5.6in; }
+  .cover .meta { font-family: 'Plex Mono'; font-size: 9pt; color: #8d8d8d; display: grid; grid-template-columns: auto 1fr; gap: 4px 18px; }
+  .cover .shot { border: 1px solid #393939; margin-top: 0.3in; }
+
+  /* Flow */
+  .flow { display: grid; grid-template-columns: repeat(5, 1fr); gap: 0; margin: 4px 0 18px; }
+  .flow div { border: 1px solid var(--ink); border-left-width: 0; padding: 10px 10px 12px; }
+  .flow div:first-child { border-left-width: 1px; }
+  .flow div span { font-family: 'Plex Mono'; font-weight: 600; color: var(--accent); background: var(--dark); padding: 0 6px; font-size: 9pt; }
+  .flow div b { display: block; margin: 6px 0 2px; font-size: 12pt; }
+  .flow div small { color: var(--ink2); font-size: 9pt; line-height: 1.3; display: block; }
+  table.map { width: 100%; border-collapse: collapse; font-size: 10pt; }
+  table.map td { border-top: 1px solid var(--line); padding: 5px 8px; vertical-align: top; }
+  table.map td:first-child { font-weight: 600; width: 1.6in; }
+
+  /* FAQ */
+  .faq { display: grid; grid-template-columns: 1fr 1fr; gap: 12px 26px; }
+  .faq div { border-top: 2px solid var(--ink); padding-top: 6px; }
+  .faq h3 { font-size: 11pt; margin: 0 0 3px; font-weight: 600; }
+  .faq p { margin: 0; font-size: 10pt; color: var(--ink2); }
+</style>
+</head>
+<body>
+
+<!-- 1 Cover -->
+<section class="page cover">
+  <div>
+    <div class="logo">VIDA</div>
+    <div class="sub">Dental clinic system</div>
+    <h1>Quick guide</h1>
+    <p>How to run a clinic day: from installing the app to checking the last patient out.</p>
+    <img class="shot" src="img/18-dashboard.jpg" alt="">
+  </div>
+  <div class="meta">
+    <span>VERSION</span><span>0.2.4 · Windows</span>
+    <span>WORKS</span><span>Offline · all data stays on the laptop</span>
+    <span>FOR</span><span>VIDA (Vida Volunteer) clinic teams</span>
+  </div>
+</section>
+
+<!-- 2 Overview -->
+<section class="page">
+  <div class="head"><span class="num">00</span><h1>The clinic day at a glance</h1></div>
+  <div class="flow">
+    <div><span>1</span><b>Registration</b><small>Details, medical history, consent. Patient gets a number.</small></div>
+    <div><span>2</span><b>Triage</b><small>Dentist sees the next five in line and sends them on.</small></div>
+    <div><span>3</span><b>Education</b><small>Brushing, diet, toothbrush kit.</small></div>
+    <div><span>4</span><b>Treatment</b><small>Cleaning and/or restorative &amp; extraction.</small></div>
+    <div><span>5</span><b>Checkout</b><small>After-care, prescriptions, follow-up, survey.</small></div>
+  </div>
+  <div class="shots"><figure><figcaption>The menu on the left · press ≡ (top-left) to show the names</figcaption><img class="shot" src="img/22a-rail-open.jpg" alt=""></figure></div>
+  <table class="map">
+    <tr><td>Top bar</td><td>Running clinic · Offline status · <b>?</b> walkthrough · version / updates · your name (change PIN, sign out)</td></tr>
+    <tr><td>Everyone</td><td>Dashboard, Registration, Triage, Education, Treatment, Checkout, Patients</td></tr>
+    <tr><td>Administrator only</td><td>Clinic events, Staff, Settings &amp; backup, Audit log</td></tr>
+  </table>
+  <div class="foot"><span>VIDA Dental · Quick guide</span><span>2</span></div>
+</section>
+
+<!-- 3 Install & update -->
+<section class="page">
+  <div class="head"><span class="num">01</span><h1>Install &amp; update</h1><span class="who">Administrator</span></div>
+  <ol class="steps">
+    <li>Download <b>VIDA-Dental-Setup-x.y.z.exe</b> from the VIDA release page and open it.</li>
+    <li>If Windows says “protected your PC”: <b>More info → Run anyway</b>.</li>
+    <li>To update: click the <b>version number</b> in the top bar → <span class="btn dark">Check for updates</span> → <span class="btn">Download</span> → <span class="btn">Restart &amp; install</span>.</li>
+    <li>No internet? Copy the new installer to a USB drive → <span class="btn dark">Choose installer file…</span></li>
+  </ol>
+  <div class="shots"><figure><figcaption>Software updates</figcaption><img class="shot" src="img/22-updates.jpg" alt=""></figure></div>
+  <p class="tip"><b>Tip</b>Updating never touches patient data. The app also checks for updates by itself a few seconds after it opens.</p>
+  <div class="foot"><span>VIDA Dental · Quick guide</span><span>3</span></div>
+</section>
+
+<!-- 4 First-time setup -->
+<section class="page">
+  <div class="head"><span class="num">02</span><h1>Before the clinic</h1><span class="who">Administrator</span></div>
+  <ol class="steps two">
+    <li>First launch: type your name and choose a 4–6 digit PIN.</li>
+    <li><b>Clinic events</b> → <span class="btn">+ New clinic</span>. Add name, trip code, community, country, dates, target.</li>
+    <li>Leave <b>“Start this clinic now”</b> ticked. The top bar turns green.</li>
+    <li><b>Staff</b> → <span class="btn">+ Add person</span> for each volunteer: name, role, PIN.</li>
+  </ol>
+  <div class="shots">
+    <figure><figcaption>Clinic events → New clinic</figcaption><img class="shot" src="img/03-new-clinic.jpg" alt=""></figure>
+    <figure><figcaption>Staff · each person has a PIN and a training status</figcaption><img class="shot" src="img/05-staff.jpg" alt=""></figure>
+  </div>
+  <div class="foot"><span>VIDA Dental · Quick guide</span><span>4</span></div>
+</section>
+
+<!-- 5 Sign in & training -->
+<section class="page">
+  <div class="head"><span class="num">03</span><h1>Sign in &amp; practise</h1><span class="who">Everyone</span></div>
+  <ol class="steps">
+    <li>Tap your name, then type your PIN.</li>
+    <li>First time? Press <span class="btn">Start walkthrough</span>: a hands-on practice of registering a patient. <b>Nothing is saved.</b></li>
+    <li>Do what the orange box asks to move on. Replay any time with the <b>?</b> button.</li>
+  </ol>
+  <div class="shots">
+    <div class="shots row">
+      <figure><figcaption>Sign in with a PIN</figcaption><img class="shot" src="img/23-pin.jpg" alt=""></figure>
+      <figure><figcaption>First sign-in</figcaption><img class="shot" src="img/02-welcome.jpg" alt=""></figure>
+    </div>
+    <figure><figcaption>The walkthrough highlights one thing at a time</figcaption><img class="shot" src="img/02c-tour-question.jpg" alt=""></figure>
+  </div>
+  <div class="foot"><span>VIDA Dental · Quick guide</span><span>5</span></div>
+</section>
+
+<!-- 6 Register 1 -->
+<section class="page">
+  <div class="head"><span class="num">04</span><h1>Register a patient · 1/3</h1><span class="who">Registration</span></div>
+  <ol class="steps">
+    <li>Pick the patient’s language: <b>Español</b> or <b>English</b>.</li>
+    <li><b>Search first</b>: name, birth date or phone. Found? Press <span class="btn">Start visit</span>.</li>
+    <li>Not found → <span class="btn">New patient</span>. Fill every field (birth date as DD/MM/YYYY).</li>
+  </ol>
+  <div class="shots">
+    <figure><figcaption>Language &amp; search</figcaption><img class="shot" src="img/06-registration-start.jpg" alt=""></figure>
+    <figure><figcaption>Patient details</figcaption><img class="shot" src="img/07-registration.jpg" alt=""></figure>
+  </div>
+  <div class="foot"><span>VIDA Dental · Quick guide</span><span>6</span></div>
+</section>
+
+<!-- 7 Register 2 -->
+<section class="page">
+  <div class="head"><span class="num">04</span><h1>Register a patient · 2/3</h1><span class="who">Registration</span></div>
+  <ol class="steps">
+    <li>Read each question aloud (or press the speaker) and tap <b>Sí</b> or <b>No</b>. A <b style="color:#da1e28">red edge</b> means a warning for the dentist.</li>
+    <li>Takes medicines? Tap them in the list.</li>
+    <li>Consent: read it aloud, tick both boxes, the patient signs with a finger or mouse.</li>
+  </ol>
+  <div class="shots">
+    <figure><figcaption>Medical history</figcaption><img class="shot" src="img/08-medical.jpg" alt=""></figure>
+    <figure><figcaption>Consent &amp; signature</figcaption><img class="shot" src="img/09-consent.jpg" alt=""></figure>
+  </div>
+  <div class="foot"><span>VIDA Dental · Quick guide</span><span>7</span></div>
+</section>
+
+<!-- 8 Register 3 -->
+<section class="page">
+  <div class="head"><span class="num">04</span><h1>Register a patient · 3/3</h1><span class="who">Registration</span></div>
+  <ol class="steps">
+    <li>Under 18: a parent or guardian signs and picks their relationship.</li>
+    <li>Press <span class="btn">Sign and register</span>.</li>
+    <li>Give the patient their <b>number</b>. They wait to be called for triage.</li>
+  </ol>
+  <div class="shots">
+    <figure><figcaption>Patient under 18</figcaption><img class="shot" src="img/11-consent-minor.jpg" alt=""></figure>
+    <figure><figcaption>Done · queue number</figcaption><img class="shot" src="img/10-registration-done.jpg" alt=""></figure>
+  </div>
+  <div class="foot"><span>VIDA Dental · Quick guide</span><span>8</span></div>
+</section>
+
+<!-- 9 Triage -->
+<section class="page">
+  <div class="head"><span class="num">05</span><h1>Triage</h1><span class="who">Dentist</span></div>
+  <ol class="steps two">
+    <li>Tap the next patient in line (the next five are shown).</li>
+    <li>Check the red warnings and health summary.</li>
+    <li>Add complaint, blood pressure, pulse, priority.</li>
+    <li>Pick a mark, then tap teeth on the chart.</li>
+    <li>Choose where they go: <b>Cleaning</b>, <b>Restorative</b>, or <b>Exam only</b>.</li>
+    <li>Press <span class="btn">Save and send on</span>.</li>
+  </ol>
+  <div class="shots">
+    <figure><figcaption>Patient opened from the queue</figcaption><img class="shot" src="img/12a-triage-open.jpg" alt=""></figure>
+    <figure><figcaption>Tooth chart &amp; route</figcaption><img class="shot" src="img/12-triage.jpg" alt=""></figure>
+  </div>
+  <div class="foot"><span>VIDA Dental · Quick guide</span><span>9</span></div>
+</section>
+
+<!-- 10 Education & treatment -->
+<section class="page">
+  <div class="head"><span class="num">06</span><h1>Education &amp; treatment</h1><span class="who">Assistants · Dentists</span></div>
+  <ol class="steps">
+    <li><b>Education</b>: tick the topics taught → <span class="btn">Done — send to treatment</span>.</li>
+    <li><b>Treatment</b>: pick the tab, <b>Cleaning</b> or <b>Restorative</b>, then the patient.</li>
+    <li>Record what was done (rows are pre-filled from triage) → <span class="btn">Mark … done</span>.</li>
+  </ol>
+  <div class="shots">
+    <figure><figcaption>Education</figcaption><img class="shot" src="img/13-education.jpg" alt=""></figure>
+    <figure><figcaption>Treatment · restorative &amp; extraction</figcaption><img class="shot" src="img/14-treatment-restorative.jpg" alt=""></figure>
+  </div>
+  <div class="foot"><span>VIDA Dental · Quick guide</span><span>10</span></div>
+</section>
+
+<!-- 11 Checkout -->
+<section class="page">
+  <div class="head"><span class="num">07</span><h1>Checkout</h1><span class="who">Coordinator</span></div>
+  <ol class="steps two">
+    <li>Open a patient under <b>Ready for checkout</b>.</li>
+    <li>Read the after-care aloud (pre-ticked).</li>
+    <li>Add prescriptions from the pharmacy list.</li>
+    <li>Tick <b>follow-up</b> if they need care next trip.</li>
+    <li>Hand over the screen for the 1–5 survey.</li>
+    <li>Press <span class="btn">Check out</span>.</li>
+  </ol>
+  <div class="shots">
+    <figure><figcaption>Recap &amp; after-care</figcaption><img class="shot" src="img/16a-checkout-open.jpg" alt=""></figure>
+    <figure><figcaption>Allergy check stops unsafe prescriptions</figcaption><img class="shot" src="img/16-checkout-allergy-block.jpg" alt=""></figure>
+  </div>
+  <div class="foot"><span>VIDA Dental · Quick guide</span><span>11</span></div>
+</section>
+
+<!-- 12 Dashboard & patients -->
+<section class="page">
+  <div class="head"><span class="num">08</span><h1>Dashboard &amp; patient records</h1><span class="who">Everyone</span></div>
+  <ol class="steps">
+    <li><b>Dashboard</b>: today’s counts, progress to target, and where every patient is.</li>
+    <li><b>Patients</b>: search any past clinic. See visits, treatments and follow-ups.</li>
+    <li>Press <span class="btn">Start a new visit</span> to register a returning patient.</li>
+  </ol>
+  <div class="shots">
+    <figure><figcaption>Dashboard · live patient flow</figcaption><img class="shot" src="img/18-dashboard.jpg" alt=""></figure>
+    <figure><figcaption>A patient record across trips</figcaption><img class="shot" src="img/19-patient-record.jpg" alt=""></figure>
+  </div>
+  <div class="foot"><span>VIDA Dental · Quick guide</span><span>12</span></div>
+</section>
+
+<!-- 13 End of day -->
+<section class="page">
+  <div class="head"><span class="num">09</span><h1>End of the day</h1><span class="who">Administrator</span></div>
+  <ol class="steps">
+    <li><b>Settings &amp; backup</b> → <span class="btn">Back up now…</span> → save the file.</li>
+    <li>Copy that file to <b>VIDA’s Google Drive</b>.</li>
+    <li>Last day of the trip: <b>Clinic events</b> → <span class="btn dark">Finish</span>. Records are kept.</li>
+  </ol>
+  <div class="shots">
+    <figure><figcaption>Backup</figcaption><img class="shot" src="img/20-settings.jpg" alt=""></figure>
+    <figure><figcaption>Clinic events · Start, Finish, Re-open</figcaption><img class="shot" src="img/04-events.jpg" alt=""></figure>
+  </div>
+  <p class="tip"><b>Tip</b>The app also saves its own copy every hour and keeps one per day for 30 days.</p>
+  <div class="foot"><span>VIDA Dental · Quick guide</span><span>13</span></div>
+</section>
+
+<!-- 14 FAQ -->
+<section class="page">
+  <div class="head"><span class="num">10</span><h1>Questions &amp; answers</h1></div>
+  <div class="faq">
+    <div><h3>Do we need internet?</h3><p>No. Everything works offline. Internet is only used to check for updates.</p></div>
+    <div><h3>Someone forgot their PIN.</h3><p>An administrator opens <b>Staff</b> → <b>Set PIN</b>.</p></div>
+    <div><h3>Wrong PIN too many times?</h3><p>After 5 tries the account waits one minute.</p></div>
+    <div><h3>A patient came before.</h3><p>Search on Registration or Patients. Their history and follow-ups appear.</p></div>
+    <div><h3>“Consent missing” is shown.</h3><p>Tap that tag on the patient to take the consent. No care until it is signed.</p></div>
+    <div><h3>Read aloud makes no sound.</h3><p>Add a Spanish voice in Windows: Settings → Time &amp; language → Speech. Or read it yourself.</p></div>
+    <div><h3>A patient left early.</h3><p>Checkout → open them → <b>Left without care</b>.</p></div>
+    <div><h3>I need to fix a checked-out visit.</h3><p>An administrator opens Patients → the visit → <b>Re-open to correct</b>.</p></div>
+    <div><h3>Need more room on screen?</h3><p>Fold the patient list with the panel icon next to the station name.</p></div>
+    <div><h3>How do I change tooth numbering?</h3><p>Settings &amp; backup → FDI (11–48) or Universal (1–32).</p></div>
+    <div><h3>The laptop broke.</h3><p>Install on another laptop → Settings &amp; backup → <b>Restore from a backup…</b></p></div>
+    <div><h3>Who saw a record?</h3><p>Administrators: <b>Audit log</b> lists every view and change.</p></div>
+  </div>
+  <p class="tip warn" style="margin-top:18px"><b>Before live clinics</b>The consent wording in this version is a draft. Replace it with VIDA’s approved text.</p>
+  <div class="foot"><span>VIDA Dental · Quick guide</span><span>14</span></div>
+</section>
+
+</body>
+</html>

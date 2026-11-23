@@ -36,6 +36,8 @@ async function run(win) {
     await wait(450);
     const stray = await win.webContents.executeJavaScript(`document.body.innerText.split('\\n').filter(l => /^(null|undefined|\\[object Object\\])$/.test(l.trim())).length`);
     if (stray) errors.push(`${name}: ${stray} stray "null/undefined" text on screen`);
+    // Pop-up notices are left out of the screenshots (they are reused in the user guide).
+    await win.webContents.executeJavaScript(`document.getElementById('toasts')?.replaceChildren(); true`);
     const img = await win.webContents.capturePage();
     fs.writeFileSync(path.join(outDir, name + '.png'), img.toPNG());
     console.log('  screenshot', name);
@@ -164,6 +166,7 @@ async function run(win) {
   await go('triage');
   await js(`$click('.q-item', 'María');`);
   await wait(700);
+  await shot('12a-triage-open');
   await js(`
     const vi = document.querySelectorAll('.vital-input'); $type(vi[0], '165'); $type(vi[1], '98'); $type(vi[2], '82');
     $click('.mark-btn', 'Needs extraction'); $click('.tooth', '36');
@@ -202,6 +205,7 @@ async function run(win) {
   await go('checkout');
   await js(`$click('.q-item', 'María');`);
   await wait(700);
+  await shot('16a-checkout-open');
   await js(`const s = document.querySelector('.rx-name') ; const sel = [...document.querySelectorAll('select')].find(x => x.textContent.includes('Add from the pharmacy'));
     $type(sel, 'amox500'); await $sleep(500);`);
   await shot('16-checkout-allergy-block');
