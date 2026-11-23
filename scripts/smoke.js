@@ -173,6 +173,28 @@ async function run(win) {
     $click('.mark-btn', 'Needs filling'); $click('.tooth', '46');
     $click('.mark-btn', 'Caries'); $click('.tooth', '46');
     $click('.check', 'Cleaning (prophy)'); $click('.check', 'Restorative');`);
+  // Quick charting: keyboard picks the mark, a drag paints several teeth, undo steps back.
+  const chartCheck = await js(`
+    const t = (n) => [...document.querySelectorAll('.tc-tooth')].find(e => e.querySelector('.tooth-num').textContent === n);
+    t('17').scrollIntoView({ block: 'center' }); await $sleep(200);
+    document.dispatchEvent(new KeyboardEvent('keydown', { key: 's', bubbles: true })); await $sleep(50);
+    const sealOn = document.querySelector('.tc-chip.m-sealant_needed').classList.contains('on');
+    const at = (el) => { const r = el.getBoundingClientRect(); return { clientX: r.left + r.width / 2, clientY: r.top + r.height / 2, pointerId: 1, pointerType: 'mouse', button: 0, bubbles: true }; };
+    t('17').dispatchEvent(new PointerEvent('pointerdown', at(t('17'))));
+    for (const n of ['16', '15']) document.dispatchEvent(new PointerEvent('pointermove', at(t(n))));
+    document.dispatchEvent(new PointerEvent('pointerup', at(t('15'))));
+    await $sleep(100);
+    const painted = document.querySelectorAll('.tc-tooth.m-sealant_needed').length;
+    document.dispatchEvent(new KeyboardEvent('keydown', { key: 'z', ctrlKey: true, bubbles: true })); await $sleep(50);
+    const afterUndo = document.querySelectorAll('.tc-tooth.m-sealant_needed').length;
+    const listed = document.querySelectorAll('.tc-item').length;
+    return { sealOn, painted, afterUndo, listed };`);
+  if (!chartCheck.sealOn) errors.push('chart: the S key did not pick "Needs sealant"');
+  if (chartCheck.painted !== 3) errors.push('chart: dragging across 3 teeth marked ' + chartCheck.painted);
+  if (chartCheck.afterUndo !== 0) errors.push('chart: undo left ' + chartCheck.afterUndo + ' sealant marks');
+  if (chartCheck.listed !== 2) errors.push('chart: the charted list shows ' + chartCheck.listed + ' teeth, expected 2');
+  await js(`document.querySelector('.tc').scrollIntoView({ block: 'start' });`);
+  await shot('12b-chart');
   await shot('12-triage');
   await js(`$click('button', 'Save and send on');`);
   await wait(700);

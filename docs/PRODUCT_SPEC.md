@@ -66,6 +66,16 @@ VIDA Dental runs a VIDA dental clinic day on a Windows laptop, with or without i
 - **Station screens:** the queue (320 px) folds away to a 40 px handle so the patient's chart gets the full width. The choice is remembered per station.
 - **Visual system:** IBM Carbon Design System Gray 10 tokens, the 8 px spacing scale, square corners, IBM Plex Sans and Mono, and Carbon icons, all bundled for offline use. VIDA dental orange `#F7941D` is the single accent, used for primary actions, the current item and progress, with near-black text on it.
 
+## Tooth chart (quick charting)
+- **Where:** used in Triage and Treatment. It is styled softer than the rest of the app on purpose.
+- **Teeth:** real shapes for molars, premolars, canines and incisors. Upper teeth have roots up and lower teeth roots down. The crown is coloured by the tooth's most important mark (extraction > filling > caries > sealant > restoration > missing).
+- **Marks:** pick one with the chips or the keys C, F, X, S, M, R, then tap a tooth to toggle it.
+- **Drag to mark several:** a drag marks every tooth it crosses. Starting the drag on a tooth that already has the mark removes it along the stroke.
+- **Undo and clear:** Undo (Ctrl+Z) keeps 40 steps. Clear all removes every mark.
+- **Notes:** right-click a tooth, or press and hold on touch, to add a note.
+- **Charted list:** sits beside the chart in chart order, with marks, notes and a remove button for each tooth.
+- **Dentition:** Adult, Mixed or Child. Mixed shows the primary arches between the permanent ones.
+
 ## Registration walkthrough (training)
 - **When it appears:** the first time each person signs in, a welcome dialog offers the walkthrough. "Not now" or finishing it records it as done for that person.
 - **Replaying it:** from the ? button, the user menu, or "Show me how" on Registration.

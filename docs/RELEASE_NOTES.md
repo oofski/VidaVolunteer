@@ -3,6 +3,13 @@
 **Download:** `VIDA-Dental-Setup-<version>.exe` (installs, and updates itself online) or `VIDA-Dental-Portable-<version>.exe` (runs without installing; update it from a USB drive or folder).
 
 ### New in 0.2
+- **Friendlier, faster tooth chart** (Triage and Treatment):
+  - Real tooth shapes, coloured by what's marked.
+  - Rounded mark chips that show their counts.
+  - **Drag across several teeth** to mark them in one stroke.
+  - Keys **C F X S M R** pick the mark, and **Ctrl+Z** undoes.
+  - A **Charted** list beside the chart, with one-tap remove.
+  - Right-click (or hold on a tablet) to add a note.
 - **Registration walkthrough.** The first time each person signs in, they're offered a guided, hands-on practice of registering a patient.
   - It highlights one control at a time and waits for them to use it.
   - Steps covered: language, searching for returning patients, details, medical history, read-aloud consent, signature and queue number.

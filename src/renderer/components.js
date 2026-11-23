@@ -97,75 +97,8 @@ export function signaturePad({ lang = 'es', getName } = {}) {
   };
 }
 
-// ---- tooth chart ------------------------------------------------------------
-// Tap a tooth to mark it. `mode` is the mark to toggle.
-export function toothChart({ chart, numbering, editable = true, onchange }) {
-  const state = { dentition: chart?.dentition || 'permanent', teeth: JSON.parse(JSON.stringify(chart?.teeth || {})) };
-  let mode = 'caries';
-  const wrap = h('div', { class: 'chart' });
-
-  function toggle(code) {
-    const t = state.teeth[code] || { marks: [], note: '' };
-    const i = t.marks.indexOf(mode);
-    if (i >= 0) t.marks.splice(i, 1); else t.marks.push(mode);
-    if (!t.marks.length && !t.note) delete state.teeth[code]; else state.teeth[code] = t;
-    render();
-    onchange && onchange(get());
-  }
-  function editNote(code) {
-    const t = state.teeth[code] || { marks: [], note: '' };
-    const inp = input({ value: t.note || '', maxlength: 80, placeholder: 'Note for this tooth' });
-    modal({
-      title: `Tooth ${F.toothLabel(code, numbering)}`, body: field('Note', inp),
-      actions: [{ label: 'Cancel' }, { label: 'Save note', kind: 'primary', onclick: () => {
-        t.note = inp.value.trim().slice(0, 80);
-        if (!t.marks.length && !t.note) delete state.teeth[code]; else state.teeth[code] = t;
-        render(); onchange && onchange(get());
-      } }]
-    });
-  }
-  function tooth(code) {
-    const t = state.teeth[code];
-    const marks = t ? t.marks : [];
-    const cls = ['tooth'].concat(marks.map(m => 'm-' + m));
-    if (t && t.note) cls.push('has-note');
-    const label = F.toothLabel(code, numbering);
-    const title = `${label}${marks.length ? ': ' + marks.map(m => F.TOOTH_MARKS.find(x => x.key === m).label).join(', ') : ''}${t && t.note ? ' — ' + t.note : ''}`;
-    return h('button', {
-      type: 'button', class: cls.join(' '), title, 'aria-label': 'Tooth ' + title, disabled: !editable,
-      onclick: () => toggle(code),
-      oncontextmenu: (e) => { e.preventDefault(); if (editable) editNote(code); }
-    }, h('span', { class: 'tooth-num' }, label),
-       h('span', { class: 'tooth-marks' }, marks.map(m => F.TOOTH_MARKS.find(x => x.key === m).short).join('')));
-  }
-  function arch(dentition) {
-    const rows = F.chartRows(dentition);
-    return h('div', { class: 'arch arch-' + dentition },
-      h('div', { class: 'arch-row' }, rows.upper.map(tooth)),
-      h('div', { class: 'arch-row' }, rows.lower.map(tooth)));
-  }
-  function render() {
-    mount(wrap,
-      h('div', { class: 'chart-tools' },
-        h('div', { class: 'seg' }, ['permanent', 'mixed', 'primary'].map(d => h('button', {
-          type: 'button', class: 'seg-btn' + (state.dentition === d ? ' on' : ''), disabled: !editable,
-          onclick: () => { state.dentition = d; render(); onchange && onchange(get()); }
-        }, d === 'permanent' ? 'Adult' : d === 'mixed' ? 'Mixed' : 'Child'))),
-        editable ? h('div', { class: 'seg seg-marks' }, F.TOOTH_MARKS.map(m => h('button', {
-          type: 'button', class: 'seg-btn mark-btn m-' + m.key + (mode === m.key ? ' on' : ''),
-          onclick: () => { mode = m.key; render(); }
-        }, h('b', null, m.short), ' ', m.label))) : null
-      ),
-      h('div', { class: 'chart-label' }, h('span', null, 'Patient’s right'), h('span', null, numbering === 'fdi' ? 'FDI numbering' : 'Universal numbering'), h('span', null, 'Patient’s left')),
-      state.dentition !== 'primary' ? arch('permanent') : null,
-      state.dentition !== 'permanent' ? arch('primary') : null,
-      editable ? h('p', { class: 'hint' }, 'Tap a tooth to add or remove the chosen mark. Right-click a tooth to add a note.') : null
-    );
-  }
-  function get() { return { dentition: state.dentition, teeth: JSON.parse(JSON.stringify(state.teeth)) }; }
-  render();
-  return { el: wrap, get };
-}
+// ---- tooth chart: see toothchart.js ------------------------------------------
+export { toothChart } from './toothchart.js';
 
 export function chartSummary(chart, numbering) {
   const items = Object.entries(chart?.teeth || {});

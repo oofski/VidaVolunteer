@@ -393,35 +393,94 @@ details.card > summary { cursor: pointer; font-weight: 600; }
 .rate-n { font-family: var(--mono); font-size: 28px; line-height: 1; }
 .rate.on { background: var(--accent); }
 
-/* Tooth chart */
-.chart-tools { display: flex; gap: var(--s4); flex-wrap: wrap; margin-bottom: var(--s4); }
-.seg-marks .seg-btn { font-size: 13px; }
-.seg-marks b { font-family: var(--mono); }
-.chart-label { display: flex; justify-content: space-between; font-family: var(--mono); font-size: 11px; text-transform: uppercase; letter-spacing: .32px; color: var(--text-3); margin-bottom: var(--s2); }
-.arch { display: flex; flex-direction: column; gap: 1px; padding: var(--s3) 0; }
-.arch + .arch { border-top: 1px dashed var(--border-0); }
-.arch-row { display: grid; grid-auto-flow: column; grid-auto-columns: minmax(0, 1fr); gap: 1px; background: var(--border-0); border: 1px solid var(--border-0); }
-.arch-primary .arch-row { width: 64%; margin: 0 auto; }
-.arch-row .tooth:nth-child(8) { box-shadow: 2px 0 0 var(--text); }
-.arch-primary .arch-row .tooth:nth-child(8) { box-shadow: none; }
-.arch-primary .arch-row .tooth:nth-child(5) { box-shadow: 2px 0 0 var(--text); }
-.tooth { position: relative; min-height: 52px; border: 0; background: var(--layer); cursor: pointer; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 2px; }
-.tooth:disabled { cursor: default; }
-.tooth:hover:not(:disabled) { background: var(--hover); }
-.tooth-num { font-family: var(--mono); font-size: 12px; color: var(--text-2); }
-.tooth-marks { font-family: var(--mono); font-size: 13px; font-weight: 600; letter-spacing: 1px; min-height: 16px; }
-.tooth.has-note::after { content: ''; position: absolute; top: 4px; right: 4px; width: 5px; height: 5px; background: var(--info); }
-.tooth.m-caries { background: var(--accent-tint); box-shadow: inset 0 -3px 0 var(--accent); }
-.tooth.m-filling_needed { background: var(--info-tint); box-shadow: inset 0 -3px 0 var(--info); }
-.tooth.m-extraction_needed { background: var(--error-tint); box-shadow: inset 0 -3px 0 var(--error); }
-.tooth.m-extraction_needed .tooth-marks { color: var(--error); }
-.tooth.m-sealant_needed { background: var(--success-tint); box-shadow: inset 0 -3px 0 var(--success); }
-.tooth.m-missing { background: repeating-linear-gradient(-45deg, var(--layer-2) 0 4px, var(--selected) 4px 8px); }
-.mark-btn.m-caries b { color: var(--accent-press); }
-.mark-btn.m-filling_needed b { color: var(--info); }
-.mark-btn.m-extraction_needed b { color: var(--error); }
-.mark-btn.m-sealant_needed b { color: var(--success-text); }
-.mark-btn.on b { color: var(--accent); }
+/* Tooth chart — deliberately softer and friendlier than the rest of the app,
+   built for quick charting: rounded mark chips, real tooth shapes, colour by mark. */
+.tc { --tc-caries: #F7941D; --tc-caries-bg: #FFE3C2;
+      --tc-filling: #1A7FC1; --tc-filling-bg: #CDE7F8;
+      --tc-extract: #D93A2B; --tc-extract-bg: #FFD3CE;
+      --tc-sealant: #4E9A2F; --tc-sealant-bg: #D7EFC8;
+      --tc-resto: #6E6A86; --tc-resto-bg: #E3E1EE;
+      --tc-missing: #A8A29A;
+      background: #FBF9F6; border: 1px solid #ECE6DD; border-radius: 14px; padding: 14px 16px 10px; }
+.tc-tools { display: flex; justify-content: space-between; gap: 12px; flex-wrap: wrap; margin-bottom: 12px; }
+.tc-marks, .tc-actions, .tc-dent { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; }
+.tc-actions { gap: 10px; }
+.tc-dent { background: #EFEAE2; border-radius: 999px; padding: 3px; gap: 2px; }
+.tc-chip, .tc-pill { display: inline-flex; align-items: center; gap: 7px; height: 34px; padding: 0 12px; border-radius: 999px; border: 1px solid #E2DBD0; background: #fff; color: var(--text); font-size: 13px; font-weight: 500; cursor: pointer; transition: background .12s, border-color .12s, box-shadow .12s; }
+.tc-chip:hover, .tc-pill:hover:not(:disabled) { border-color: #C9BFB0; background: #FFFDF9; }
+.tc-pill:disabled { opacity: .45; cursor: default; }
+.tc-dent .tc-pill { border: 0; background: transparent; height: 28px; }
+.tc-dent .tc-pill.on { background: #fff; box-shadow: 0 1px 2px rgba(0,0,0,.12); }
+.tc-dot { width: 12px; height: 12px; border-radius: 50%; flex: none; border: 2px solid; }
+.tc-chip kbd { font-family: var(--mono); font-size: 11px; color: var(--text-3); border: 1px solid #E2DBD0; border-radius: 5px; padding: 0 5px; background: #FBF9F6; }
+.tc-count { font-family: var(--mono); font-size: 11px; font-weight: 600; min-width: 20px; height: 20px; border-radius: 999px; display: inline-grid; place-items: center; background: #EFEAE2; padding: 0 5px; }
+.tc-chip.on { color: #fff; border-color: transparent; box-shadow: 0 2px 6px rgba(0,0,0,.15); }
+.tc-chip.on kbd { color: #fff; border-color: rgba(255,255,255,.5); background: transparent; }
+.tc-chip.on .tc-count { background: rgba(255,255,255,.3); color: #fff; }
+.tc-chip.on .tc-dot { border-color: #fff; }
+.m-caries .tc-dot { border-color: var(--tc-caries); background: var(--tc-caries-bg); }
+.m-filling_needed .tc-dot { border-color: var(--tc-filling); background: var(--tc-filling-bg); }
+.m-extraction_needed .tc-dot { border-color: var(--tc-extract); background: var(--tc-extract-bg); }
+.m-sealant_needed .tc-dot { border-color: var(--tc-sealant); background: var(--tc-sealant-bg); }
+.m-existing_restoration .tc-dot { border-color: var(--tc-resto); background: var(--tc-resto-bg); }
+.m-missing .tc-dot { border-color: var(--tc-missing); border-style: dashed; background: transparent; }
+.tc-chip.on.m-caries { background: #E07F0A; }
+.tc-chip.on.m-filling_needed { background: var(--tc-filling); }
+.tc-chip.on.m-extraction_needed { background: var(--tc-extract); }
+.tc-chip.on.m-sealant_needed { background: var(--tc-sealant); }
+.tc-chip.on.m-existing_restoration { background: var(--tc-resto); }
+.tc-chip.on.m-missing { background: #7d776f; }
+.tc-body { display: grid; grid-template-columns: minmax(0, 1fr) 210px; gap: 14px; align-items: start; }
+.tc-mouth { background: #fff; border: 1px solid #ECE6DD; border-radius: 12px; padding: 8px 10px; user-select: none; }
+.tc-side { display: flex; justify-content: space-between; font-size: 11px; color: var(--text-3); padding: 0 4px; }
+.tc-jaw { font-weight: 600; color: var(--text-2); text-transform: uppercase; letter-spacing: .6px; }
+.tc-row { display: flex; align-items: stretch; justify-content: center; }
+.tc-half { display: grid; grid-auto-flow: column; grid-auto-columns: minmax(0, 1fr); flex: 1; gap: 2px; }
+.tc-prim .tc-half { flex: 0.62; }
+.tc-mid { width: 2px; margin: 6px 6px; background: repeating-linear-gradient(#D9D1C5 0 4px, transparent 4px 8px); }
+.tc-occlusal { height: 1px; margin: 4px 0; background: #ECE6DD; }
+.tc-tooth { min-height: 0; border: 0; border-radius: 10px; background: transparent; padding: 2px 0; display: flex; flex-direction: column; align-items: center; gap: 1px; cursor: pointer; touch-action: none; position: relative; transition: background .1s, transform .08s; box-shadow: none; }
+.tc-tooth:hover:not(:disabled) { background: #F6F1EA; }
+.tc-tooth:active:not(:disabled) { transform: scale(.96); }
+.tc-tooth:disabled { cursor: default; }
+.tc-svg { width: 100%; max-width: 38px; height: 58px; overflow: visible; }
+.tc-prim .tc-svg { height: 40px; max-width: 28px; }
+.tc-root { fill: #F1EBE2; stroke: none; }
+.tc-crown { fill: #FFFFFF; }
+.tc-edge { fill: none; stroke: #BDB4A7; stroke-width: 1.6; }
+.tc-x { stroke: var(--tc-extract); stroke-width: 3.4; stroke-linecap: round; }
+.tc-tooth .tooth-num { font-family: var(--mono); font-size: 11px; color: var(--text-2); line-height: 14px; }
+.tc-tooth .tooth-marks { font-family: var(--mono); font-size: 10px; font-weight: 600; letter-spacing: 1px; min-height: 12px; line-height: 12px; color: var(--text-2); }
+.tc-tooth.has-note::after { content: ''; position: absolute; top: 4px; right: 18%; width: 7px; height: 7px; border-radius: 50%; background: var(--tc-filling); box-shadow: 0 0 0 2px #fff; }
+.tc-lower.has-note::after { top: auto; bottom: 4px; }
+.tc-tooth.m-caries .tc-crown { fill: var(--tc-caries-bg); } .tc-tooth.m-caries .tc-edge { stroke: var(--tc-caries); stroke-width: 2.2; }
+.tc-tooth.m-filling_needed .tc-crown { fill: var(--tc-filling-bg); } .tc-tooth.m-filling_needed .tc-edge { stroke: var(--tc-filling); stroke-width: 2.2; }
+.tc-tooth.m-extraction_needed .tc-crown, .tc-tooth.m-extraction_needed .tc-root { fill: var(--tc-extract-bg); } .tc-tooth.m-extraction_needed .tc-edge { stroke: var(--tc-extract); stroke-width: 2.2; }
+.tc-tooth.m-sealant_needed .tc-crown { fill: var(--tc-sealant-bg); } .tc-tooth.m-sealant_needed .tc-edge { stroke: var(--tc-sealant); stroke-width: 2.2; }
+.tc-tooth.m-existing_restoration .tc-crown { fill: var(--tc-resto-bg); } .tc-tooth.m-existing_restoration .tc-edge { stroke: var(--tc-resto); stroke-width: 2.2; }
+.tc-tooth.m-missing .tc-svg { opacity: .45; } .tc-tooth.m-missing .tc-edge { stroke-dasharray: 3 3; } .tc-tooth.m-missing .tc-crown, .tc-tooth.m-missing .tc-root { fill: transparent; }
+.tc-tooth.m-caries .tooth-marks { color: #B86500; } .tc-tooth.m-filling_needed .tooth-marks { color: var(--tc-filling); }
+.tc-tooth.m-extraction_needed .tooth-marks { color: var(--tc-extract); } .tc-tooth.m-sealant_needed .tooth-marks { color: var(--tc-sealant); }
+.tc-list { background: #fff; border: 1px solid #ECE6DD; border-radius: 12px; padding: 10px 12px; max-height: 300px; overflow: auto; }
+.tc-list-title { display: flex; justify-content: space-between; font-weight: 600; font-size: 13px; margin-bottom: 6px; }
+.tc-list-title span { font-family: var(--mono); color: var(--text-3); font-weight: 400; }
+.tc-item { display: flex; gap: 8px; align-items: flex-start; padding: 6px 0; border-top: 1px solid #F1ECE4; }
+.tc-item-num { font-family: var(--mono); font-weight: 600; min-width: 26px; }
+.tc-item-marks { flex: 1; display: flex; flex-wrap: wrap; gap: 4px; }
+.tc-tag { font-size: 11px; padding: 1px 8px; border-radius: 999px; border: 1px solid; white-space: nowrap; }
+.tc-tag.m-caries { border-color: var(--tc-caries); background: var(--tc-caries-bg); color: #8A4A00; }
+.tc-tag.m-filling_needed { border-color: var(--tc-filling); background: var(--tc-filling-bg); color: #0B4C77; }
+.tc-tag.m-extraction_needed { border-color: var(--tc-extract); background: var(--tc-extract-bg); color: #8F1F15; }
+.tc-tag.m-sealant_needed { border-color: var(--tc-sealant); background: var(--tc-sealant-bg); color: #2C5C17; }
+.tc-tag.m-existing_restoration { border-color: var(--tc-resto); background: var(--tc-resto-bg); color: #3E3B52; }
+.tc-tag.m-missing { border-color: var(--tc-missing); border-style: dashed; color: var(--text-2); }
+.tc-note { font-size: 11px; color: var(--text-2); width: 100%; }
+.tc-remove { border: 0; background: transparent; color: var(--text-3); font-size: 16px; line-height: 1; width: 22px; height: 22px; border-radius: 50%; cursor: pointer; }
+.tc-remove:hover { background: #FFE5E2; color: var(--tc-extract); }
+.tc-empty { color: var(--text-3); font-size: 12px; margin: 4px 0; }
+.tc-hint { font-size: 11px; color: var(--text-3); margin: 8px 2px 0; }
+.tc-readonly .tc-body { grid-template-columns: minmax(0, 1fr) 190px; }
+@media (max-width: 1200px) { .tc-body { grid-template-columns: 1fr; } .tc-list { max-height: none; } }
 .tooth-list { margin: 0; padding-left: 18px; line-height: 1.7; }
 .tooth-list b { font-family: var(--mono); }
 
